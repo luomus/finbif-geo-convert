@@ -4,6 +4,7 @@ library(dplyr)
 library(tidyr)
 library(tools)
 library(rlang)
+library(stringi)
 
 bb <- function(x0, y0, x1, y1) {
   ans <- c(x0, x0, x1, x1, x0, y0, y1, y1, y0, y0)
@@ -181,7 +182,11 @@ finbif_geo_convert <- function(
   if (identical(fmt, "shp")) {
 
     data <- mutate(
-      data, across(where(is.character), ~substr(URLencode(.x), 1L, 254L))
+      data,
+      across(
+        where(is.character),
+        stri_sub(stri_trans_general(.x, "latin-ascii"), length = 254)
+      )
     )
 
   }
