@@ -185,7 +185,7 @@ finbif_geo_convert <- function(
       data,
       across(
         where(is.character),
-        stri_sub(stri_trans_general(.x, "latin-ascii"), length = 254)
+        ~stri_sub(stri_trans_general(.x, "latin-ascii"), length = 254)
       )
     )
 
