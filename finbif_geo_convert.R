@@ -55,7 +55,7 @@ finbif_geo_convert <- function(
 
   names(geo_cols) <- geo_col_names
 
-  agg <- switch(geo, point = NULL, agg)
+  agg <- switch(geo, point = agg, NULL)
 
   geo <- paste(c(geo, agg), collapse = "_")
 
