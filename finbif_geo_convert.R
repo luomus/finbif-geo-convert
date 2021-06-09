@@ -5,6 +5,7 @@ library(tidyr)
 library(tools)
 library(rlang)
 library(stringi)
+library(purrr)
 
 bb <- function(x0, y0, x1, y1) {
   ans <- c(x0, x0, x1, x1, x0, y0, y1, y1, y0, y0)
@@ -148,7 +149,8 @@ finbif_geo_convert <- function(
       spatial_data, bbox_kkj = st_as_sfc(bbox_kkj, crs = st_crs(2393))
     ),
     footprint_wgs84 = mutate(
-      spatial_data, footprint_wgs84 = st_as_sfc(footprint_wgs84, crs = st_crs(4326))
+      spatial_data,
+      footprint_wgs84 = st_as_sfc(footprint_wgs84, crs = st_crs(4326))
     )
   )
 
@@ -196,6 +198,16 @@ finbif_geo_convert <- function(
         )
       )
     )
+    if (identical(geo, "footprint")) {
+
+      ind <- map_lgl(
+        spatial_data[["footprint_wgs84"]],
+        ~as.character(st_geometry_type(.x)) != "POLYGON"
+      )
+
+      spatial_data[ind , "footprint_wgs84"] <- NA
+
+    }
 
   }
 
