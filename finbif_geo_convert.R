@@ -38,7 +38,7 @@ geo_components <- list(
     "lon_min_euref", "lat_min_euref", "lon_max_euref", "lat_max_euref"
   ),
   bbox_kkj = c("lon_min_kkj", "lat_min_kkj", "lon_max_kkj", "lat_max_kkj"),
-  polygon_wgs84 = "footprint_wgs84"
+  footprint_wgs84 = "footprint_wgs84"
 )
 
 finbif_geo_convert <- function(
@@ -73,7 +73,7 @@ finbif_geo_convert <- function(
       point = "euref",
       point_1km = "kkj",
       point_10km = "kkj",
-      polygon = "wgs84"
+      footprint = "wgs84"
     )
 
     geo_crs_avail <- paste(geo, geo_crs_avail, sep = "_")
@@ -116,7 +116,7 @@ finbif_geo_convert <- function(
       spatial_data,
       bbox_kkj = bb(lon_min_kkj, lat_min_kkj, lon_max_kkj, lat_max_kkj)
     ),
-    polygon_wgs84 = mutate(
+    footprint_wgs84 = mutate(
       spatial_data, footprint_wgs84 = replace_na(footprint_wgs84, "POINT EMPTY")
     )
   )
@@ -147,12 +147,16 @@ finbif_geo_convert <- function(
     bbox_kkj = mutate(
       spatial_data, bbox_kkj = st_as_sfc(bbox_kkj, crs = st_crs(2393))
     ),
-    polygon_wgs84 = mutate(
-      spatial_data, polygon_wgs84 = st_as_sfc(polygon_wgs84, crs = st_crs(4326))
+    footprint_wgs84 = mutate(
+      spatial_data, footprint_wgs84 = st_as_sfc(footprint_wgs84, crs = st_crs(4326))
     )
   )
 
-  spatial_data <- select(spatial_data, !any_of(geo_components[[geo_crs_avail]]))
+  spatial_data <- switch(
+    geo_crs_avail,
+    footprint_wgs84 = spatial_data,
+    select(spatial_data, !any_of(geo_components[[geo_crs_avail]]))
+  )
 
   if (!geo_crs_is_avail) {
 
