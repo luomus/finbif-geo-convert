@@ -42,7 +42,7 @@ geo_components <- list(
 )
 
 finbif_geo_convert <- function(
-  input, output, geo = "point", agg = NULL, crs = "wgs84", ...
+  input, output, geo = "point", agg = NULL, crs = "wgs84", n = -1, ...
 ) {
 
   fmt <- file_ext(output)
@@ -81,7 +81,7 @@ finbif_geo_convert <- function(
   }
 
   spatial_data <- fb_occurrence_load(
-    input, select = geo_components[[geo_crs_avail]], quiet = TRUE
+    input, select = geo_components[[geo_crs_avail]], n = n, quiet = TRUE
   )
 
   spatial_data <- rowwise(spatial_data)
@@ -172,7 +172,8 @@ finbif_geo_convert <- function(
 
   data <- fb_occurrence_load(
     input,
-    select = c(switch(fmt, shp = "short", "all"), paste0("-", geo_col_names))
+    select = c(switch(fmt, shp = "short", "all"), paste0("-", geo_col_names)),
+    n = n
   )
 
   data <- select(data, where(~any(!is.na(.x))))
