@@ -16,7 +16,7 @@ bb <- function(x0, y0, x1, y1) {
 
 fmts <- c(
   "bna", "csv", "geojson", "gml", "gpkg", "gxt", "jml", "nc", "ods", "shp",
-  "sqlite", "vdv", "xlsx"
+  "sqlite", "vdv", "xlsx", "rds", "none"
 )
 
 short_geo_col_nms <- c(
@@ -43,10 +43,10 @@ geo_components <- list(
 )
 
 finbif_geo_convert <- function(
-  input, output, geo = "point", agg = NULL, crs = "wgs84", n = -1, ...
+  input, output = "none", geo = "point", agg = NULL, crs = "wgs84", n = -1, ...
 ) {
 
-  fmt <- file_ext(output)
+  fmt <- switch(output, none = output, file_ext(output))
 
   stopifnot("Format not supported" = fmt %in% fmts)
 
@@ -222,6 +222,13 @@ finbif_geo_convert <- function(
 
   }
 
-  st_write(data, output, ...)
+  switch(
+    fmt,
+    none = NULL,
+    rds = saveRDS(data, output, ...),
+    st_write(data, output, ...)
+  )
+
+  invisible(data)
 
 }
