@@ -232,3 +232,7 @@ finbif_geo_convert <- function(
   invisible(data)
 
 }
+
+library(plumber)
+p <- plumb("api.R")
+p$run(host = "0.0.0.0", port = 8000L)

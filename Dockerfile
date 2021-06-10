@@ -37,4 +37,16 @@ RUN install2.r -s -e -r cran.r-project.org sf
 
 RUN installGithub.r luomus/finbif@dev
 
-CMD ["R"]
+ENV HOME /home/user
+ENV OPENBLAS_NUM_THREADS 1
+
+COPY entrypoint.sh /home/user/entrypoint.sh
+COPY finbif_geo_convert.R /home/user/finbif_geo_convert.R
+COPY api.R /home/user/api.R
+
+RUN  chgrp -R 0 /home/user \
+  && chmod -R g=u /home/user /etc/passwd
+
+WORKDIR /home/user
+
+ENTRYPOINT ["./entrypoint.sh"]
