@@ -199,7 +199,7 @@ finbif_geo_convert <- function(
 
   data <- mutate(data, across(where(is.logical), as.integer))
 
-  if (identical(fmt, "shp") && identical(geo, "footprint")) {
+  if (identical(fmt, "shp")) {
 
     geo_types <- as.character(st_geometry_type(spatial_data))
 
@@ -246,18 +246,9 @@ finbif_geo_convert <- function(
 
 shp_write <- function(data, output, ...) {
 
-  if (inherits(data, "sf")) {
-
-    data <- list(data)
-    names(data) <- output
-
-  } else {
-
-    names(data) <- sprintf(
-      gsub("\\.shp$", "_%s.shp", output), tolower(names(data))
-    )
-
-  }
+  names(data) <- sprintf(
+    gsub("\\.shp$", "_%s.shp", output), tolower(names(data))
+  )
 
   for (i in names(data)) {
 
