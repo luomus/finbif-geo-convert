@@ -29,7 +29,7 @@ cors <- function(req, res) {
 #* @serializer contentType list(type="application/zip")
 function(input, fmt, geo, crs, agg, req, res) {
 
-  if (missing(agg)) agg <- NULL
+  if (missing(agg) || identical(agg, "0")) agg <- NULL
 
   input <- as.integer(input)
 

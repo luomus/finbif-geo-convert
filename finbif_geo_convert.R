@@ -82,7 +82,20 @@ finbif_geo_convert <- function(
   }
 
   spatial_data <- fb_occurrence_load(
-    input, select = geo_components[[geo_crs_avail]], n = n, quiet = TRUE
+    input, select = geo_components[[geo_crs_avail]], n = n, quiet = TRUE,
+    keep_tsv = TRUE
+  )
+
+  input <- switch(
+    file_ext(input),
+    tsv = input,
+    zip = sprintf(
+      "%s/rows_%s.tsv", tempdir(), basename(file_path_sans_ext(input))
+    ),
+    sprintf(
+      "%s/rows_HBF.%s.tsv", tempdir(),
+      stri_extract_all_regex(input, "\\d+")[[1L]]
+    )
   )
 
   spatial_data <- rowwise(spatial_data)
@@ -186,7 +199,7 @@ finbif_geo_convert <- function(
 
   data <- mutate(data, across(where(is.logical), as.integer))
 
-  if (identical(fmt, "shp")) {
+  if (identical(fmt, "shp") && identical(geo, "footprint")) {
 
     geo_types <- as.character(st_geometry_type(spatial_data))
 
@@ -240,7 +253,9 @@ shp_write <- function(data, output, ...) {
 
   } else {
 
-    names(data) <- sprintf(gsub("\\.", "_%s.", output), tolower(names(data)))
+    names(data) <- sprintf(
+      gsub("\\.shp$", "_%s.shp", output), tolower(names(data))
+    )
 
   }
 
