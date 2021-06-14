@@ -48,6 +48,7 @@ function(input, fmt, geo, crs, agg, req, res) {
   output_zip <- paste0(output_dir, ".zip")
 
   zip(output_zip, list.files())
+  on.exit(unlink(output_zip), add = TRUE)
 
   out <- readBin(output_zip, "raw", n = file.info(output_zip)$size)
 
