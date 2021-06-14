@@ -188,37 +188,33 @@ finbif_geo_convert <- function(
 
   if (identical(fmt, "shp")) {
 
-    data <- mutate(
-      data,
-      across(
-        where(is.character),
-        ~stri_sub(
-          stri_escape_unicode(stri_trans_general(.x, "latin-ascii")),
-          length = 254
+    geo_types <- as.character(st_geometry_type(spatial_data))
+
+    unique_geo_types <- unique(geo_types)
+
+    data_list <- list()
+
+    for (i in unique_geo_types) {
+
+      ind <- geo_types == i
+
+      data_list[[i]] <- data[ind, ]
+
+      data_list[[i]] <- st_as_sf(
+        cbind(data_list[[i]], spatial_data[ind, ]),
+        agr = set_names(
+          rep_len("identity", length(data_list[[i]])), names(data_list[[i]])
         )
       )
-    )
-    if (identical(geo, "footprint")) {
-
-      ind <- map_lgl(
-        spatial_data[["footprint_wgs84"]],
-        ~as.character(st_geometry_type(.x)) != "POLYGON"
-      )
-
-      spatial_data[ind , "footprint_wgs84"] <- NA
 
     }
 
-  }
+  } else {
 
-  data <- st_as_sf(
-    cbind(data, spatial_data),
-    agr = set_names(rep_len("identity", length(data)), names(data))
-  )
-
-  if (identical(fmt, "bna")) {
-
-    data <- filter(data, !st_is_empty(st_geometry(data)))
+    data <- st_as_sf(
+      cbind(data, spatial_data),
+      agr = set_names(rep_len("identity", length(data)), names(data))
+    )
 
   }
 
@@ -226,10 +222,33 @@ finbif_geo_convert <- function(
     fmt,
     none = NULL,
     rds = saveRDS(data, output, ...),
+    bna = st_write(filter(data, !st_is_empty(st_geometry(data))), output, ...),
+    shp =  shp_write(data_list, output, ...),
     st_write(data, output, ...)
   )
 
   invisible(data)
+
+}
+
+shp_write <- function(data, output, ...) {
+
+  if (inherits(data, "sf")) {
+
+    data <- list(data)
+    names(data) <- output
+
+  } else {
+
+    names(data) <- sprintf(gsub("\\.", "_%s.", output), tolower(names(data)))
+
+  }
+
+  for (i in names(data)) {
+
+    st_write(data[[i]], i, layer_options = "ENCODING=UTF-8", ...)
+
+  }
 
 }
 
