@@ -49,4 +49,6 @@ RUN  chgrp -R 0 /home/user \
 
 WORKDIR /home/user
 
+EXPOSE 8000
+
 ENTRYPOINT ["./entrypoint.sh"]
