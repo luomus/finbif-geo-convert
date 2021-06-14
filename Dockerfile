@@ -38,7 +38,7 @@ RUN install2.r -s -e -r cran.r-project.org sf
 RUN installGithub.r luomus/finbif@dev
 
 ENV HOME /home/user
-ENV OPENBLAS_NUM_THREADS 1
+ENV OPENBLAS_NUM_THREADS 2
 
 COPY entrypoint.sh /home/user/entrypoint.sh
 COPY finbif_geo_convert.R /home/user/finbif_geo_convert.R
