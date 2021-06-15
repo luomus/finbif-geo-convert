@@ -246,9 +246,17 @@ finbif_geo_convert <- function(
 
 shp_write <- function(data, output, ...) {
 
-  names(data) <- sprintf(
-    gsub("\\.shp$", "_%s.shp", output), tolower(names(data))
-  )
+  if (identical(length(data), 1L)) {
+
+    names(data) <- output
+
+  } else {
+
+    names(data) <- sprintf(
+      gsub("\\.shp$", "_%s.shp", output), tolower(names(data))
+    )
+
+  }
 
   for (i in names(data)) {
 
