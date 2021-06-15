@@ -33,12 +33,18 @@ function(input, fmt, geo, crs, agg, req, res) {
 
   input <- as.integer(input)
 
-  output_dir <- paste("HBF", input, sep = ".")
+  pwd <- getwd()
+  on.exit(setwd(pwd))
+
+  work_dir <- paste0("wd", as.hexmode(sample(1e9L, 1L)))
+  dir.create(work_dir)
+  setwd(work_dir)
+  on.exit(unlink(work_dir, recursive = TRUE), add = TRUE)
+
+  output_dir <- paste("HBF", input, "geo", sep = ".")
 
   dir.create(output_dir)
-  wd <- getwd()
-  on.exit(setwd(wd))
-  on.exit(unlink(output_dir, recursive = TRUE), add = TRUE)
+
   setwd(output_dir)
 
   output <- paste(output_dir, fmt, sep = ".")
@@ -48,7 +54,6 @@ function(input, fmt, geo, crs, agg, req, res) {
   output_zip <- paste0(output_dir, ".zip")
 
   zip(output_zip, list.files())
-  on.exit(unlink(output_zip), add = TRUE)
 
   out <- readBin(output_zip, "raw", n = file.info(output_zip)$size)
 
