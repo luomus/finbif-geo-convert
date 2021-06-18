@@ -15,8 +15,8 @@ bb <- function(x0, y0, x1, y1) {
 }
 
 fmts <- c(
-  "bna", "csv", "fgb", "geojson", "gml", "gpkg", "gxt", "jml", "nc", "ods",
-  "rds", "shp", "sqlite", "vdv", "xlsx", "none"
+  "csv", "fgb", "geojson", "gml", "gmt", "gpkg", "gxt", "jml", "nc",
+  "ods", "rds", "shp", "sqlite", "vdv", "xlsx", "none"
 )
 
 short_geo_col_nms <- c(
@@ -235,8 +235,7 @@ finbif_geo_convert <- function(
     fmt,
     none = NULL,
     rds = saveRDS(data, output, ...),
-    bna = st_write(filter(data, !st_is_empty(st_geometry(data))), output, ...),
-    shp =  shp_write(data_list, output, ...),
+    shp = shp_write(data_list, output, ...),
     st_write(data, output, ...)
   )
 
