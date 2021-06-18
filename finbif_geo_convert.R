@@ -43,7 +43,8 @@ geo_components <- list(
 )
 
 finbif_geo_convert <- function(
-  input, output = "none", geo = "point", agg = NULL, crs = "wgs84", n = -1, ...
+  input, output = "none", geo = "point", agg = NULL, crs = "wgs84", n = -1,
+  facts = list(), ...
 ) {
 
   fmt <- switch(output, none = output, file_ext(output))
@@ -83,7 +84,7 @@ finbif_geo_convert <- function(
 
   spatial_data <- fb_occurrence_load(
     input, select = geo_components[[geo_crs_avail]], n = n, quiet = TRUE,
-    keep_tsv = TRUE
+    keep_tsv = TRUE,  facts = facts
   )
 
   input <- switch(
@@ -139,38 +140,32 @@ finbif_geo_convert <- function(
 
   spatial_data <- switch(
     geo_crs_avail,
-    point_wgs84 = mutate(
+    point_wgs84 = transmute(
       spatial_data, point_wgs84 = st_as_sfc(point_wgs84, crs = st_crs(4326))
     ),
-    point_euref = mutate(
+    point_euref = transmute(
       spatial_data, point_euref = st_as_sfc(point_euref, crs = st_crs(3067))
     ),
-    point_1km_kkj = mutate(
+    point_1km_kkj = transmute(
       spatial_data, point_1km_kkj = st_as_sfc(point_1km_kkj, crs = st_crs(2393))
     ),
-    point_10km_kkj = mutate(
+    point_10km_kkj = transmute(
       spatial_data,
       point_10km_kkj = st_as_sfc(point_10km_kkj, crs = st_crs(2393))
     ),
-    bbox_wgs84 = mutate(
+    bbox_wgs84 = transmute(
       spatial_data, bbox_wgs84 = st_as_sfc(bbox_wgs84, crs = st_crs(4326))
     ),
-    bbox_euref = mutate(
+    bbox_euref = transmute(
       spatial_data, bbox_euref = st_as_sfc(bbox_euref, crs = st_crs(3067))
     ),
-    bbox_kkj = mutate(
+    bbox_kkj = transmute(
       spatial_data, bbox_kkj = st_as_sfc(bbox_kkj, crs = st_crs(2393))
     ),
-    footprint_wgs84 = mutate(
+    footprint_wgs84 = transmute(
       spatial_data,
       footprint_wgs84 = st_as_sfc(footprint_wgs84, crs = st_crs(4326))
     )
-  )
-
-  spatial_data <- switch(
-    geo_crs_avail,
-    footprint_wgs84 = spatial_data,
-    select(spatial_data, !any_of(geo_components[[geo_crs_avail]]))
   )
 
   if (!geo_crs_is_avail) {
@@ -192,7 +187,7 @@ finbif_geo_convert <- function(
   data <- fb_occurrence_load(
     input,
     select = c(switch(fmt, shp = "short", "all"), paste0("-", geo_col_names)),
-    n = n
+    n = n, facts = facts
   )
 
   data <- select(data, where(~any(!is.na(.x))))

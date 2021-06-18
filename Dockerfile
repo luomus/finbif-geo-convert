@@ -35,6 +35,8 @@ RUN add-apt-repository ppa:ubuntugis/ubuntugis-unstable \
 
 RUN install2.r -s -e -r cran.r-project.org sf
 
+ENV FLUSH 1
+
 RUN installGithub.r luomus/finbif@dev
 
 ENV HOME /home/user

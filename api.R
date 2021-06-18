@@ -25,11 +25,40 @@ cors <- function(req, res) {
 #* Convert a FinBIF occurrence data object into geographic data format
 #* @get /<input:int>/<fmt>/<geo>/<crs>
 #* @param agg Aggregation. 1km or 10km. Ignored if not point data
+#* @param rfcts Record level facts. Multiple values comma separated.
+#* @param efcts Event level facts. Multiple values comma separated.
+#* @param dfcts Document level facts. Multiple values comma separated.
 #* @tag convert
 #* @serializer contentType list(type="application/zip")
-function(input, fmt, geo, crs, agg, req, res) {
+function(input, fmt, geo, crs, agg, rfcts, efcts, dfcts, req, res) {
 
   if (missing(agg) || !agg %in% c("1km", "10km")) agg <- NULL
+
+  facts <- list()
+
+  if (!missing(rfcts)) {
+
+    facts[["record"]] <- scan(
+      text = rfcts, what = "char", sep = ",", quiet = TRUE
+    )
+
+  }
+
+  if (!missing(efcts)) {
+
+    facts[["event"]] <- scan(
+      text = efcts, what = "char", sep = ",", quiet = TRUE
+    )
+
+  }
+
+  if (!missing(dfcts)) {
+
+    facts[["document"]] <- scan(
+      text = dfcts, what = "char", sep = ",", quiet = TRUE
+    )
+
+  }
 
   input <- as.integer(input)
 
@@ -49,7 +78,7 @@ function(input, fmt, geo, crs, agg, req, res) {
 
   output <- paste(output_dir, fmt, sep = ".")
 
-  finbif_geo_convert(input, output, geo, agg, crs)
+  finbif_geo_convert(input, output, geo, agg, crs, facts = facts)
 
   output_zip <- paste0(output_dir, ".zip")
 
