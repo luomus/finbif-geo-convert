@@ -190,8 +190,6 @@ finbif_geo_convert <- function(
     n = n, facts = facts
   )
 
-  data <- select(data, where(~any(!is.na(.x))))
-
   data <- mutate(data, across(where(is.logical), as.integer))
 
   if (identical(fmt, "shp")) {
