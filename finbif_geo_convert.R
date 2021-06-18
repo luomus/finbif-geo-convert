@@ -15,8 +15,8 @@ bb <- function(x0, y0, x1, y1) {
 }
 
 fmts <- c(
-  "bna", "csv", "geojson", "gml", "gpkg", "gxt", "jml", "nc", "ods", "shp",
-  "sqlite", "vdv", "xlsx", "rds", "none"
+  "bna", "csv", "fgb", "geojson", "gml", "gpkg", "gxt", "jml", "nc", "ods",
+  "rds", "shp", "sqlite", "vdv", "xlsx", "none"
 )
 
 short_geo_col_nms <- c(
