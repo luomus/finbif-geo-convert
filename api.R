@@ -2,7 +2,7 @@
 #* @apiDescription Convert FinBIF occurrence data into geographic data formats
 #* @apiTOS https://laji.fi/en/about/845
 #* @apiContact list(name = "laji.fi support", email = "helpdesk@laji.fi")
-#* @apiVersion 0.1.0.9000
+#* @apiVersion 0.1.0.9001
 #* @apiLicense list(name = "GPL-2.0", url = "https://opensource.org/licenses/GPL-2.0")
 #* @apiTag convert Geographic conversion.
 
@@ -22,15 +22,31 @@ cors <- function(req, res) {
   }
 }
 
-#* Convert a FinBIF occurrence data object into geographic data format
+#* Convert a FinBIF occurrence data object into a geographic data format
 #* @get /<input:int>/<fmt>/<geo>/<crs>
-#* @param agg:[str] Aggregation. 1km or 10km. Ignored if not point data
-#* @param rfcts:[str] Record level facts. Multiple values comma separated.
-#* @param efcts:[str] Event level facts. Multiple values comma separated.
-#* @param dfcts:[str] Document level facts. Multiple values comma separated.
+#* @param agg:str Aggregation. 1km or 10km. Ignored if `geo!=point`.
+#* @param select:str Which variables to select? Multiple values comma separated.
+#* @param rfcts:str Record level facts. Multiple values comma separated.
+#* @param efcts:str Event level facts. Multiple values comma separated.
+#* @param dfcts:str Document level facts. Multiple values comma separated.
+#* @param dwc:bool Use Darwin Core style column names? Ignored if `fmt==shp`.
+#* @param missing:bool Keep columns containing missing data only?
 #* @tag convert
 #* @serializer contentType list(type="application/zip")
-function(input, fmt, geo, crs, agg, rfcts, efcts, dfcts, req, res) {
+function(
+  input, fmt, geo, crs, agg, select, rfcts, efcts, dfcts, dwc = "false",
+  missing = "true"
+) {
+
+  if (missing(select)) {
+
+    select <- "all"
+
+  } else {
+
+    select <- scan(text = select, what = "char", sep = ",", quiet = TRUE)
+
+  }
 
   if (missing(agg) || !agg %in% c("1km", "10km")) agg <- NULL
 
@@ -60,6 +76,12 @@ function(input, fmt, geo, crs, agg, rfcts, efcts, dfcts, req, res) {
 
   }
 
+  missing <- match.arg(missing, c("true", "false"))
+  missing <- switch(missing, true = TRUE, false = FALSE)
+
+  dwc <- match.arg(dwc, c("true", "false"))
+  dwc <- switch(dwc, true = TRUE, false = FALSE)
+
   input <- as.integer(input)
 
   pwd <- getwd()
@@ -78,7 +100,10 @@ function(input, fmt, geo, crs, agg, rfcts, efcts, dfcts, req, res) {
 
   output <- paste(output_dir, fmt, sep = ".")
 
-  finbif_geo_convert(input, output, geo, agg, crs, facts = facts)
+  finbif_geo_convert(
+    input, output, geo, agg, crs, select = select, facts = facts, dwc = dwc,
+    drop_na = !missing
+  )
 
   output_zip <- paste0(output_dir, ".zip")
 

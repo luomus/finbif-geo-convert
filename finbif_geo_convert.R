@@ -43,8 +43,8 @@ geo_components <- list(
 )
 
 finbif_geo_convert <- function(
-  input, output = "none", geo = "point", agg = NULL, crs = "wgs84", n = -1,
-  facts = list(), ...
+  input, output = "none", geo = "point", agg = NULL, crs = "wgs84", select,
+  n = -1, facts = list(), file_type = "citable", locale = "en", ...
 ) {
 
   fmt <- switch(output, none = output, file_ext(output))
@@ -84,7 +84,7 @@ finbif_geo_convert <- function(
 
   spatial_data <- fb_occurrence_load(
     input, select = geo_components[[geo_crs_avail]], n = n, quiet = TRUE,
-    keep_tsv = TRUE
+    keep_tsv = TRUE, facts = facts
   )
 
   input <- switch(
@@ -188,6 +188,22 @@ finbif_geo_convert <- function(
     input,
     select = c(switch(fmt, shp = "short", "all"), paste0("-", geo_col_names)),
     n = n, facts = facts, ...
+  )
+
+  col_type <- "native"
+
+  if (attr(data, "dwc")) {
+
+    col_type <- "dwc"
+
+  }
+
+  to <- switch(fmt, shp = "short", col_type)
+
+  data <- switch(
+    select,
+    all = data,
+    data[, from_schema(select, to = to, file = file_type, locale = locale)]
   )
 
   data <- mutate(data, across(where(is.logical), as.integer))
