@@ -24,10 +24,10 @@ cors <- function(req, res) {
 
 #* Convert a FinBIF occurrence data object into geographic data format
 #* @get /<input:int>/<fmt>/<geo>/<crs>
-#* @param agg Aggregation. 1km or 10km. Ignored if not point data
-#* @param rfcts Record level facts. Multiple values comma separated.
-#* @param efcts Event level facts. Multiple values comma separated.
-#* @param dfcts Document level facts. Multiple values comma separated.
+#* @param agg:[str] Aggregation. 1km or 10km. Ignored if not point data
+#* @param rfcts:[str] Record level facts. Multiple values comma separated.
+#* @param efcts:[str] Event level facts. Multiple values comma separated.
+#* @param dfcts:[str] Document level facts. Multiple values comma separated.
 #* @tag convert
 #* @serializer contentType list(type="application/zip")
 function(input, fmt, geo, crs, agg, rfcts, efcts, dfcts, req, res) {
