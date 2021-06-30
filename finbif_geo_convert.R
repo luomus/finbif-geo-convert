@@ -84,7 +84,7 @@ finbif_geo_convert <- function(
 
   spatial_data <- fb_occurrence_load(
     input, select = geo_components[[geo_crs_avail]], n = n, quiet = TRUE,
-    keep_tsv = TRUE,  facts = facts
+    keep_tsv = TRUE
   )
 
   input <- switch(
@@ -187,7 +187,7 @@ finbif_geo_convert <- function(
   data <- fb_occurrence_load(
     input,
     select = c(switch(fmt, shp = "short", "all"), paste0("-", geo_col_names)),
-    n = n, facts = facts
+    n = n, facts = facts, ...
   )
 
   data <- mutate(data, across(where(is.logical), as.integer))
@@ -227,16 +227,16 @@ finbif_geo_convert <- function(
   switch(
     fmt,
     none = NULL,
-    rds = saveRDS(data, output, ...),
-    shp = shp_write(data_list, output, ...),
-    st_write(data, output, ...)
+    rds = saveRDS(data, output),
+    shp = shp_write(data_list, output),
+    st_write(data, output)
   )
 
   invisible(data)
 
 }
 
-shp_write <- function(data, output, ...) {
+shp_write <- function(data, output) {
 
   if (identical(length(data), 1L)) {
 
@@ -252,7 +252,7 @@ shp_write <- function(data, output, ...) {
 
   for (i in names(data)) {
 
-    st_write(data[[i]], i, layer_options = "ENCODING=UTF-8", ...)
+    st_write(data[[i]], i, layer_options = "ENCODING=UTF-8")
 
   }
 
