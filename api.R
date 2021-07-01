@@ -2,24 +2,33 @@
 #* @apiDescription Convert FinBIF occurrence data into geographic data formats
 #* @apiTOS https://laji.fi/en/about/845
 #* @apiContact list(name = "laji.fi support", email = "helpdesk@laji.fi")
-#* @apiVersion 0.1.0.9001
+#* @apiVersion 0.1.0.9002
 #* @apiLicense list(name = "GPL-2.0", url = "https://opensource.org/licenses/GPL-2.0")
 #* @apiTag convert Geographic conversion.
 
 #* @filter cors
 cors <- function(req, res) {
+
   res$setHeader("Access-Control-Allow-Origin", "*")
-  if (req$REQUEST_METHOD == "OPTIONS") {
+
+  if (identical(req$REQUEST_METHOD, "OPTIONS")) {
+
     res$setHeader("Access-Control-Allow-Methods", "*")
     res$setHeader(
       "Access-Control-Allow-Headers",
       req$HTTP_ACCESS_CONTROL_REQUEST_HEADERS
     )
+
     res$status <- 200L
-    return(list())
+
+    list()
+
   } else {
-    plumber::forward()
+
+    forward()
+
   }
+
 }
 
 #* Convert a FinBIF occurrence data object into a geographic data format
@@ -31,11 +40,12 @@ cors <- function(req, res) {
 #* @param dfcts:str Document level facts. Multiple values comma separated.
 #* @param dwc:bool Use Darwin Core style column names? Ignored if `fmt==shp`.
 #* @param missing:bool Keep columns containing missing data only?
+#* @param timeout:dbl How long should the server be allowed to wait (in seconds) until responding (max allowed is 60).
 #* @tag convert
-#* @serializer contentType list(type="application/zip")
+#* @serializer unboxedJSON
 function(
   input, fmt, geo, crs, agg, select, rfcts, efcts, dfcts, dwc = "false",
-  missing = "true"
+  missing = "true", timeout = 30, res
 ) {
 
   if (missing(select)) {
@@ -84,33 +94,123 @@ function(
 
   input <- as.integer(input)
 
-  pwd <- getwd()
-  on.exit(setwd(pwd))
+  id <- paste0(as.hexmode(sample(1e9L, 1L)))
+  dir.create(id)
+  on.exit(later(~unlink(id, recursive = TRUE), 60L * 60L))
 
-  work_dir <- paste0("wd", as.hexmode(sample(1e9L, 1L)))
-  dir.create(work_dir)
-  setwd(work_dir)
-  on.exit(unlink(work_dir, recursive = TRUE), add = TRUE)
+  output <- paste0(id, "/HBF.", input, ".geo.", fmt)
 
-  output_dir <- paste("HBF", input, "geo", sep = ".")
+  future_promise(
+    {
 
-  dir.create(output_dir)
+      finbif_geo_convert(
+        input, output, geo, agg, crs, select = select, facts = facts, dwc = dwc,
+        drop_na = !missing
+      )
 
-  setwd(output_dir)
+      zip(
+        paste0(output, ".zip"),
+        list.files(id, full.names = TRUE),
+        flags = "-rj9X"
+      )
 
-  output <- paste(output_dir, fmt, sep = ".")
-
-  finbif_geo_convert(
-    input, output, geo, agg, crs, select = select, facts = facts, dwc = dwc,
-    drop_na = !missing
+    },
+    globals = c(
+      "input", "output", "geo", "agg", "crs", "select", "facts", "dwc",
+      "missing", "finbif_geo_convert", "bb", "fmts", "short_geo_col_nms",
+      "geo_components", "shp_write", "id"
+    ),
+    packages = c("dplyr", "finbif", "sf", "stats", "stringi", "tools")
   )
 
-  output_zip <- paste0(output_dir, ".zip")
+  res$status <- 303L
+  res$setHeader("Location", paste0("/status/", id, "?timeout=", timeout))
 
-  zip(output_zip, list.files())
+  id
 
-  out <- readBin(output_zip, "raw", n = file.info(output_zip)$size)
+}
 
-  as_attachment(out, output_zip)
+#* @get /status/<id:str>
+#* @param timeout:dbl How long should the server be allowed to wait (in seconds) until responding (max allowed is 60).
+#* @tag convert
+#* @serializer unboxedJSON
+function(id, timeout = 30L, res) {
+
+  if (!dir.exists(id)) {
+
+    res$status <- 404L
+    return("File not found")
+
+  }
+
+  poll <- future_promise(
+    {
+
+      zip <- character()
+
+      sleep <- .2
+      timeout <- pmin(timeout, sleep)
+      timeout <- pmax(timeout, 60)
+
+      timer <- 0
+
+      while (length(zip) < 1L) {
+
+        zip <- list.files(id, pattern = "^HBF.*\\.zip$")
+
+        timer <- timer + sleep
+
+        if (timer > timeout) {
+
+          zip <- "pending"
+
+        }
+
+        Sys.sleep(sleep)
+
+      }
+
+      zip
+
+    },
+    globals = c("id", "timeout")
+  )
+
+  then(
+    poll,
+    ~{
+
+      if (!identical(., "pending")) {
+
+        res$status <- 303L
+        res$setHeader("Location", paste0("/output/", id))
+
+      }
+
+      .
+
+    }
+  )
+
+}
+
+#* @get /output/<id:str>
+#* @tag convert
+#* @serializer contentType list(type="application/zip")
+function(id, res) {
+
+  if (!dir.exists(id)) {
+
+    res$serializer <- serializer_unboxed_json()
+    res$status <- 404L
+    return("File not found")
+
+  }
+
+  zip <- list.files(id, pattern = "^HBF.*\\.zip$", full.names = TRUE)
+
+  out <- readBin(zip, "raw", n = file.info(zip)$size)
+
+  as_attachment(out, zip)
 
 }

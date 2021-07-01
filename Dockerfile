@@ -23,7 +23,24 @@ RUN apt-get update \
  && apt-get autoclean -y \
  && rm -rf /var/lib/apt/lists/*
 
-RUN install2.r -s -e classInt cpp11 data.table DBI e1071 proxy plumber remotes s2 stringi units tidyr wk
+RUN install2.r -s -e \
+  classInt \
+  cpp11 \
+  data.table \
+  DBI \
+  dplyr \
+  e1071 \
+  fastmap \
+  future \
+  later \
+  plumber \
+  promises \
+  proxy \
+  remotes \
+  s2 \
+  stringi \
+  units \
+  wk
 
 RUN add-apt-repository ppa:ubuntugis/ubuntugis-unstable \
  && apt-get install -y --no-install-recommends \

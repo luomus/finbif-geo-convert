@@ -1,11 +1,15 @@
-library(finbif)
-library(sf)
 library(dplyr)
-library(tidyr)
-library(tools)
-library(rlang)
+library(finbif)
+library(future)
+library(later)
+library(plumber)
+library(promises)
+library(sf)
+library(stats)
 library(stringi)
-library(purrr)
+library(tools)
+
+plan("multisession")
 
 bb <- function(x0, y0, x1, y1) {
   ans <- c(x0, x0, x1, x1, x0, y0, y1, y1, y0, y0)
@@ -132,7 +136,8 @@ finbif_geo_convert <- function(
       bbox_kkj = bb(lon_min_kkj, lat_min_kkj, lon_max_kkj, lat_max_kkj)
     ),
     footprint_wgs84 = mutate(
-      spatial_data, footprint_wgs84 = replace_na(footprint_wgs84, "POINT EMPTY")
+      spatial_data,
+      footprint_wgs84 = stri_replace_na(footprint_wgs84, "POINT EMPTY")
     )
   )
 
@@ -224,7 +229,7 @@ finbif_geo_convert <- function(
 
       data_list[[i]] <- st_as_sf(
         cbind(data_list[[i]], spatial_data[ind, ]),
-        agr = set_names(
+        agr = setNames(
           rep_len("identity", length(data_list[[i]])), names(data_list[[i]])
         )
       )
@@ -235,7 +240,7 @@ finbif_geo_convert <- function(
 
     data <- st_as_sf(
       cbind(data, spatial_data),
-      agr = set_names(rep_len("identity", length(data)), names(data))
+      agr = setNames(rep_len("identity", length(data)), names(data))
     )
 
   }
@@ -274,6 +279,5 @@ shp_write <- function(data, output) {
 
 }
 
-library(plumber)
 p <- plumb("api.R")
 p$run(host = "0.0.0.0", port = 8000L)
