@@ -149,8 +149,8 @@ function(id, timeout = 30L, res) {
       zip <- character()
 
       sleep <- .2
-      timeout <- pmin(timeout, sleep)
-      timeout <- pmax(timeout, 60)
+      timeout <- pmax(timeout, sleep)
+      timeout <- pmin(timeout, 60)
 
       timer <- 0
 
