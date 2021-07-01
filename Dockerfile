@@ -67,7 +67,7 @@ RUN groupadd -r user && useradd --no-log-init -r -g user user
 
 RUN echo "user:x:$(id user -u):$(id user -g):user user:/home/user:/sbin/nologin" >> /etc/passwd
 
-RUN  chgrp -R user /home/user \
+RUN  chown -R user:user /home/user \
   && chmod -R g=u /home/user
 
 WORKDIR /home/user
