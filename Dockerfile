@@ -40,6 +40,7 @@ RUN install2.r -s -e \
   s2 \
   stringi \
   units \
+  tidyr \
   wk
 
 RUN add-apt-repository ppa:ubuntugis/ubuntugis-unstable \
@@ -65,10 +66,8 @@ COPY api.R /home/user/api.R
 
 RUN groupadd -r user && useradd --no-log-init -r -g user user
 
-RUN echo "user:x:$(id user -u):$(id user -g):user user:/home/user:/sbin/nologin" >> /etc/passwd
-
-RUN  chown -R user:user /home/user \
-  && chmod -R g=u /home/user
+RUN  chgrp -R 0 /home/user \
+  && chmod -R g=u /home/user /etc/passwd
 
 WORKDIR /home/user
 
