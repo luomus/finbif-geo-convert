@@ -32,7 +32,7 @@ cors <- function(req, res) {
 }
 
 #* Convert a FinBIF occurrence data object into a geographic data format
-#* @get /<input:int>/<fmt>/<geo>/<crs>
+#* @get /<input:int>/<fmt:str>/<geo:str>/<crs:str>
 #* @param agg:str Aggregation. 1km or 10km. Ignored if `geo!=point`.
 #* @param select:str Which variables to select? Multiple values comma separated.
 #* @param rfcts:str Record level facts. Multiple values comma separated.
@@ -40,12 +40,13 @@ cors <- function(req, res) {
 #* @param dfcts:str Document level facts. Multiple values comma separated.
 #* @param dwc:bool Use Darwin Core style column names? Ignored if `fmt==shp`.
 #* @param missing:bool Keep columns containing missing data only?
-#* @param timeout:dbl How long should the server be allowed to wait (in seconds) until responding (max allowed is 60).
+#* @param timeout:dbl How long should the server be allowed to wait (in seconds) until responding (max allowed is 60)?
+#* @param persist:int How long (in hours) after the request is made should the output file still be available (max 24 hours)?
 #* @tag convert
 #* @serializer unboxedJSON
 function(
   input, fmt, geo, crs, agg, select, rfcts, efcts, dfcts, dwc = "false",
-  missing = "true", timeout = 30, res
+  missing = "true", timeout = 30, persist = 1, res
 ) {
 
   if (missing(select)) {
@@ -94,9 +95,13 @@ function(
 
   input <- as.integer(input)
 
+  persist <- as.integer(persist)
+  persist <- pmax(persist, 1L)
+  persist <- pmin(persist, 24L)
+
   id <- paste0(as.hexmode(sample(1e9L, 1L)))
   dir.create(id)
-  on.exit(later(~unlink(id, recursive = TRUE), 60L * 60L))
+  on.exit(later(~unlink(id, recursive = TRUE), 60L * 60L * persist))
 
   output <- paste0(id, "/HBF.", input, ".geo.", fmt)
 
