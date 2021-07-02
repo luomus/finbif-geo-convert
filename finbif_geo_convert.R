@@ -114,10 +114,12 @@ finbif_geo_convert <- function(
       spatial_data, point_euref = list(st_point(c(lon_euref, lat_euref)))
     ),
     point_1km_kkj = mutate(
-      spatial_data, point_1km_kkj = list(st_point(c(lon_1_kkj, lat_1_kkj)))
+      spatial_data,
+      point_1km_kkj = list(st_point(c(lon_1_kkj * 1e3, lat_1_kkj * 1e3)))
     ),
     point_10km_kkj = mutate(
-      spatial_data, point_10km_kkj = list(st_point(c(lon_10_kkj, lat_10_kkj)))
+      spatial_data,
+      point_10km_kkj = list(st_point(c(lon_10_kkj * 1e4, lat_10_kkj * 1e4)))
     ),
     bbox_wgs84 = mutate(
       spatial_data,
