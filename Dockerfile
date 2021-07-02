@@ -64,7 +64,7 @@ COPY entrypoint.sh /home/user/entrypoint.sh
 COPY finbif_geo_convert.R /home/user/finbif_geo_convert.R
 COPY api.R /home/user/api.R
 
-RUN groupadd -r user && useradd --no-log-init -r -g user user
+RUN useradd --no-log-init -r -g 0 user
 
 RUN  chgrp -R 0 /home/user \
   && chmod -R g=u /home/user /etc/passwd
