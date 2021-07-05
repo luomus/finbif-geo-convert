@@ -33,7 +33,8 @@ cors <- function(req, res) {
 
 #* Convert a FinBIF occurrence data object into a geographic data format
 #* @get /<input:int>/<fmt:str>/<geo:str>/<crs:str>
-#* @param agg:str Aggregation. 1km or 10km. Ignored if `geo!=point`.
+#* @post /<input:int>/<fmt:str>/<geo:str>/<crs:str>
+#* @param agg:str Aggregation. 1km, 1km_center, 10km or 10km_center. Ignored if `geo!=point`.
 #* @param select:str Which variables to select? Multiple values comma separated.
 #* @param rfcts:str Record level facts. Multiple values comma separated.
 #* @param efcts:str Event level facts. Multiple values comma separated.
@@ -42,28 +43,42 @@ cors <- function(req, res) {
 #* @param missing:bool Keep columns containing missing data only?
 #* @param timeout:dbl How long should the server be allowed to wait (in seconds) until responding (max allowed is 60)?
 #* @param persist:int How long (in hours) after the request is made should the output file still be available (max 24 hours)?
+#* @param file:file File to convert (maximum allowed size is ~100mb).
+#* @param filetype:str One of "citable" or "lite". Only needed if `select!=all`
+#* @param locale:str One of "en", "fi", or "sv". Only needed if `select!=all`
 #* @tag convert
 #* @serializer unboxedJSON
 function(
-  input, fmt, geo, crs, agg, select, rfcts, efcts, dfcts, dwc = "false",
-  missing = "true", timeout = 30, persist = 1, res
+  input, fmt, geo, crs, agg = "none", select = "all", rfcts = "none",
+  efcts = "none", dfcts = "none", dwc = "false", missing = "true", timeout = 30,
+  persist = 1, file = "", filetype = "citable", locale = "en", req, res
 ) {
 
-  if (missing(select)) {
+  persist <- as.integer(persist)
+  persist <- pmax(persist, 1L)
+  persist <- pmin(persist, 24L)
 
-    select <- "all"
+  id <- paste0(as.hexmode(sample(1e9L, 1L)))
 
-  } else {
+  dir.create(id)
 
-    select <- scan(text = select, what = "char", sep = ",", quiet = TRUE)
+  on.exit(later(~unlink(id, recursive = TRUE), 60L * 60L * persist))
 
-  }
+  input_id <- input
 
-  if (missing(agg) || !agg %in% c("1km", "10km")) agg <- NULL
+  input <- switch(
+    req$REQUEST_METHOD,
+    GET = as.integer(input),
+    POST = tempfile(tmpdir = id, fileext = paste0(".", file_ext(names(file))))
+  )
+
+  select <- scan(text = select, what = "char", sep = ",", quiet = TRUE)
+
+  if (!agg %in% c("1km", "10km", "1km_center", "10km_center")) agg <- NULL
 
   facts <- list()
 
-  if (!missing(rfcts)) {
+  if (!identical(rfcts, "none")) {
 
     facts[["record"]] <- scan(
       text = rfcts, what = "char", sep = ",", quiet = TRUE
@@ -71,7 +86,7 @@ function(
 
   }
 
-  if (!missing(efcts)) {
+  if (!identical(efcts, "none")) {
 
     facts[["event"]] <- scan(
       text = efcts, what = "char", sep = ",", quiet = TRUE
@@ -79,7 +94,7 @@ function(
 
   }
 
-  if (!missing(dfcts)) {
+  if (!identical(dfcts, "none")) {
 
     facts[["document"]] <- scan(
       text = dfcts, what = "char", sep = ",", quiet = TRUE
@@ -93,37 +108,33 @@ function(
   dwc <- match.arg(dwc, c("true", "false"))
   dwc <- switch(dwc, true = TRUE, false = FALSE)
 
-  input <- as.integer(input)
-
-  persist <- as.integer(persist)
-  persist <- pmax(persist, 1L)
-  persist <- pmin(persist, 24L)
-
-  id <- paste0(as.hexmode(sample(1e9L, 1L)))
-  dir.create(id)
-  on.exit(later(~unlink(id, recursive = TRUE), 60L * 60L * persist))
-
-  output <- paste0(id, "/HBF.", input, ".geo.", fmt)
+  output <- paste0(id, "/HBF.", input_id, ".geo.", fmt)
 
   future_promise(
     {
 
+      if (is.character(input)) {
+
+        writeBin(file[[1L]], input)
+
+      }
+
       finbif_geo_convert(
         input, output, geo, agg, crs, select = select, facts = facts, dwc = dwc,
-        drop_na = !missing
+        drop_na = !missing, filetype, locale
       )
 
       zip(
         paste0(output, ".zip"),
-        list.files(id, full.names = TRUE),
+        setdiff(list.files(id, full.names = TRUE), input),
         flags = "-rj9X"
       )
 
     },
     globals = c(
       "input", "output", "geo", "agg", "crs", "select", "facts", "dwc",
-      "missing", "finbif_geo_convert", "bb", "fmts", "short_geo_col_nms",
-      "geo_components", "shp_write", "id"
+      "missing", "finbif_geo_convert", "shp_write", "id", "file", "filetype"
+      "locale"
     ),
     packages = c("dplyr", "finbif", "sf", "stats", "stringi", "tools")
   )
@@ -153,7 +164,7 @@ function(id, timeout = 30L, res) {
 
       zip <- character()
 
-      sleep <- .2
+      sleep <- .1
 
       timeout <- as.numeric(timeout)
       timeout <- pmax(timeout, sleep)
@@ -219,5 +230,29 @@ function(id, res) {
   out <- readBin(zip, "raw", n = file.info(zip)$size)
 
   as_attachment(out, zip)
+
+}
+
+#* @plumber
+function(pr) {
+
+  pr_set_api_spec(
+    pr,
+    function(spec) {
+
+      spec$paths$`/{input}/{fmt}/{geo}/{crs}`$get$requestBody <- NULL
+
+      for (i in c("file_type", "locale")) {
+
+        pars <- spec$paths$`/{input}/{fmt}/{geo}/{crs}`$get$parameters
+        ind <- which(vapply(pars, getElement, character(1L), "name") == i)
+        spec$paths$`/{input}/{fmt}/{geo}/{crs}`$get$parameters[[ind]] <- NULL
+
+      }
+
+      spec
+
+    }
+  )
 
 }

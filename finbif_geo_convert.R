@@ -11,45 +11,55 @@ library(tools)
 
 plan("multisession")
 
-bb <- function(x0, y0, x1, y1) {
-  ans <- c(x0, x0, x1, x1, x0, y0, y1, y1, y0, y0)
-  if (anyNA(ans)) return(NA)
-  ans <- matrix(ans, 5L)
-  list(st_polygon(list(ans)))
-}
-
-fmts <- c(
-  "csv", "fgb", "geojson", "gml", "gmt", "gpkg", "gxt", "jml", "nc",
-  "ods", "rds", "shp", "sqlite", "vdv", "xlsx", "none"
-)
-
-short_geo_col_nms <- c(
-  "lonWGS84", "latWGS84", "lonEUREF", "latEUREF", "lon1KKJ",
-  "lat1KKJ", "lon10KKJ", "lat10KKJ", "lonMnWGS84", "latMnWGS84",
-  "lonMxWGS84", "latMxWGS84", "lonMnEUREF", "latMnEUREF",
-  "lonMxEUREF", "latMxEUREF", "lonMnKKJ", "latMnKKJ",
-  "lonMxKKJ", "latMxKKJ", "fprntWGS84"
-)
-
-geo_components <- list(
-  point_wgs84 = c("lon_wgs84", "lat_wgs84"),
-  point_euref = c("lon_euref", "lat_euref"),
-  point_1km_kkj = c("lon_1_kkj", "lat_1_kkj"),
-  point_10km_kkj = c("lon_10_kkj", "lat_10_kkj"),
-  bbox_wgs84 = c(
-    "lon_min_wgs84", "lat_min_wgs84", "lon_max_wgs84", "lat_max_wgs84"
-  ),
-  bbox_euref = c(
-    "lon_min_euref", "lat_min_euref", "lon_max_euref", "lat_max_euref"
-  ),
-  bbox_kkj = c("lon_min_kkj", "lat_min_kkj", "lon_max_kkj", "lat_max_kkj"),
-  footprint_wgs84 = "footprint_wgs84"
-)
+options(plumber.maxRequestSize = 1e8L)
 
 finbif_geo_convert <- function(
-  input, output = "none", geo = "point", agg = NULL, crs = "wgs84", select,
-  n = -1, facts = list(), file_type = "citable", locale = "en", ...
+  input, output = "none", geo = c("point", "bbox", "footprint"), agg = NULL,
+  crs = "wgs84", select = "all", n = -1, facts = list(), file_type = "citable",
+  locale = "en", ...
 ) {
+
+  bb <- function(x0, y0, x1, y1) {
+    ans <- c(x0, x0, x1, x1, x0, y0, y1, y1, y0, y0)
+    if (anyNA(ans)) return(NA)
+    ans <- matrix(ans, 5L)
+    list(st_polygon(list(ans)))
+  }
+
+  fmts <- c(
+    "csv", "fgb", "geojson", "gml", "gmt", "gpkg", "gxt", "jml", "nc",
+    "ods", "rds", "shp", "sqlite", "vdv", "xlsx", "none"
+  )
+
+  short_geo_col_nms <- c(
+    "lonWGS84", "latWGS84", "lonEUREF", "latEUREF", "lon1KKJ",
+    "lat1KKJ", "lon10KKJ", "lat10KKJ", "lonMnWGS84", "latMnWGS84",
+    "lonMxWGS84", "latMxWGS84", "lonMnEUREF", "latMnEUREF",
+    "lonMxEUREF", "latMxEUREF", "lonMnKKJ", "latMnKKJ",
+    "lonMxKKJ", "latMxKKJ", "fprntWGS84", "crd1KKJ", "crd1cKKJ", "crd10KKJ",
+    "crd10cKKJ"
+  )
+
+  geo_components <- list(
+    point_wgs84 = c("lon_wgs84", "lat_wgs84"),
+    point_euref = c("lon_euref", "lat_euref"),
+    point_1km_kkj = c("lon_1_kkj", "lat_1_kkj"),
+    point_10km_kkj = c("lon_10_kkj", "lat_10_kkj"),
+    point_1km_center_kkj = c("lon_1_center_kkj", "lat_1_center_kkj"),
+    point_10km_center_kkj = c("lon_10_center_kkj", "lat_10_center_kkj"),
+    bbox_wgs84 = c(
+      "lon_min_wgs84", "lat_min_wgs84", "lon_max_wgs84", "lat_max_wgs84"
+    ),
+    bbox_euref = c(
+      "lon_min_euref", "lat_min_euref", "lon_max_euref", "lat_max_euref"
+    ),
+    bbox_kkj = c("lon_min_kkj", "lat_min_kkj", "lon_max_kkj", "lat_max_kkj"),
+    footprint_wgs84 = "footprint_wgs84",
+    c(
+      "coordinates_1_kkj", "coordinates_1_center_kkj" ,"coordinates_10_kkj",
+      "coordinates_10_center_kkj"
+    )
+  )
 
   fmt <- switch(output, none = output, file_ext(output))
 
@@ -60,6 +70,8 @@ finbif_geo_convert <- function(
   geo_cols <- switch(fmt, shp = short_geo_col_nms, geo_col_names)
 
   names(geo_cols) <- geo_col_names
+
+  geo <- match.arg(geo)
 
   agg <- switch(geo, point = agg, NULL)
 
@@ -79,6 +91,8 @@ finbif_geo_convert <- function(
       point = "euref",
       point_1km = "kkj",
       point_10km = "kkj",
+      point_1km_center = "kkj",
+      point_10km_center = "kkj",
       footprint = "wgs84"
     )
 
@@ -94,6 +108,8 @@ finbif_geo_convert <- function(
   input <- switch(
     file_ext(input),
     tsv = input,
+    ods = input,
+    xlsx = input,
     zip = sprintf(
       "%s/rows_%s.tsv", tempdir(), basename(file_path_sans_ext(input))
     ),
@@ -120,6 +136,18 @@ finbif_geo_convert <- function(
     point_10km_kkj = mutate(
       spatial_data,
       point_10km_kkj = list(st_point(c(lon_10_kkj * 1e4, lat_10_kkj * 1e4)))
+    ),
+    point_1km_center_kkj = mutate(
+      spatial_data,
+      point_1km_center_kkj = list(
+        st_point(c(lon_1_center_kkj * 1e3, lat_1_center_kkj * 1e3))
+      )
+    ),
+    point_10km_center_kkj = mutate(
+      spatial_data,
+      point_10km_center_kkj = list(
+        st_point(c(lon_10_center_kkj * 1e4, lat_10_center_kkj * 1e4))
+      )
     ),
     bbox_wgs84 = mutate(
       spatial_data,
@@ -159,6 +187,16 @@ finbif_geo_convert <- function(
     point_10km_kkj = transmute(
       spatial_data,
       point_10km_kkj = st_as_sfc(point_10km_kkj, crs = st_crs(2393))
+    ),
+    point_1km_center_kkj = transmute(
+      spatial_data,
+      point_1km_center_kkj = st_as_sfc(point_1km_center_kkj, crs = st_crs(2393))
+    ),
+    point_10km_center_kkj = transmute(
+      spatial_data,
+      point_10km_center_kkj = st_as_sfc(
+        point_10km_center_kkj, crs = st_crs(2393)
+      )
     ),
     bbox_wgs84 = transmute(
       spatial_data, bbox_wgs84 = st_as_sfc(bbox_wgs84, crs = st_crs(4326))

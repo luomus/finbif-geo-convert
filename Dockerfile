@@ -37,6 +37,8 @@ RUN install2.r -s -e \
   promises \
   proxy \
   remotes \
+  readODS \
+  readxl \
   s2 \
   stringi \
   units \
@@ -53,7 +55,7 @@ RUN add-apt-repository ppa:ubuntugis/ubuntugis-unstable \
 
 RUN install2.r -s -e -r cran.r-project.org sf
 
-ENV FLUSH 0
+ENV FLUSH 1
 
 RUN installGithub.r luomus/finbif@dev
 
