@@ -133,7 +133,7 @@ function(
     },
     globals = c(
       "input", "output", "geo", "agg", "crs", "select", "facts", "dwc",
-      "missing", "finbif_geo_convert", "shp_write", "id", "file", "filetype"
+      "missing", "finbif_geo_convert", "shp_write", "id", "file", "filetype",
       "locale"
     ),
     packages = c("dplyr", "finbif", "sf", "stats", "stringi", "tools")
