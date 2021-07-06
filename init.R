@@ -1,5 +1,5 @@
 library(dplyr)
-#library(fgc)
+library(fgc)
 library(finbif)
 library(future)
 library(later)
@@ -7,7 +7,7 @@ library(plumber)
 library(promises)
 library(tools)
 
-future::plan("multisession")
+future::plan("multicore")
 
 options(plumber.maxRequestSize = 1e8L)
 
