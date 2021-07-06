@@ -2,7 +2,7 @@
 #* @apiDescription Convert FinBIF occurrence data into geographic data formats
 #* @apiTOS https://laji.fi/en/about/845
 #* @apiContact list(name = "laji.fi support", email = "helpdesk@laji.fi")
-#* @apiVersion 0.1.0.9002
+#* @apiVersion 0.1.0.9003
 #* @apiLicense list(name = "GPL-2.0", url = "https://opensource.org/licenses/GPL-2.0")
 #* @apiTag convert Geographic conversion.
 
@@ -25,7 +25,7 @@ cors <- function(req, res) {
 
   } else {
 
-    forward()
+    plumber::forward()
 
   }
 
@@ -62,14 +62,16 @@ function(
 
   dir.create(id)
 
-  on.exit(later(~unlink(id, recursive = TRUE), 60L * 60L * persist))
+  on.exit(later::later(~unlink(id, recursive = TRUE), 60L * 60L * persist))
 
   input_id <- input
 
   input <- switch(
     req$REQUEST_METHOD,
     GET = as.integer(input),
-    POST = tempfile(tmpdir = id, fileext = paste0(".", file_ext(names(file))))
+    POST = tempfile(
+      tmpdir = id, fileext = paste0(".", tools::file_ext(names(file)))
+    )
   )
 
   select <- scan(text = select, what = "char", sep = ",", quiet = TRUE)
@@ -110,7 +112,7 @@ function(
 
   output <- paste0(id, "/HBF.", input_id, ".geo.", fmt)
 
-  future_promise(
+  promises::future_promise(
     {
 
       if (is.character(input)) {
@@ -119,7 +121,7 @@ function(
 
       }
 
-      finbif_geo_convert(
+      fgc::finbif_geo_convert(
         input, output, geo, agg, crs, select = select, facts = facts, dwc = dwc,
         drop_na = !missing, filetype, locale
       )
@@ -133,10 +135,9 @@ function(
     },
     globals = c(
       "input", "output", "geo", "agg", "crs", "select", "facts", "dwc",
-      "missing", "finbif_geo_convert", "shp_write", "id", "file", "filetype",
-      "locale"
+      "missing", "id", "file", "filetype", "locale"
     ),
-    packages = c("dplyr", "finbif", "sf", "stats", "stringi", "tools")
+    packages = "fgc"
   )
 
   res$status <- 303L
@@ -159,7 +160,7 @@ function(id, timeout = 30L, res) {
 
   }
 
-  poll <- future_promise(
+  poll <- promises::future_promise(
     {
 
       zip <- character()
@@ -194,7 +195,7 @@ function(id, timeout = 30L, res) {
     globals = c("id", "timeout")
   )
 
-  then(
+  promises::then(
     poll,
     ~{
 
@@ -219,7 +220,7 @@ function(id, res) {
 
   if (!dir.exists(id)) {
 
-    res$serializer <- serializer_unboxed_json()
+    res$serializer <- plumber::serializer_unboxed_json()
     res$status <- 404L
     return("File not found")
 
@@ -229,14 +230,14 @@ function(id, res) {
 
   out <- readBin(zip, "raw", n = file.info(zip)$size)
 
-  as_attachment(out, zip)
+  plumber::as_attachment(out, zip)
 
 }
 
 #* @plumber
 function(pr) {
 
-  pr_set_api_spec(
+  plumber::pr_set_api_spec(
     pr,
     function(spec) {
 

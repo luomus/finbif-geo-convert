@@ -5,7 +5,6 @@ set -e
 
 apt-get update && apt-get -y install lsb-release
 
-UBUNTU_VERSION=${UBUNTU_VERSION:-`lsb_release -sc`}
 LANG=${LANG:-en_US.UTF-8}
 LC_ALL=${LC_ALL:-en_US.UTF-8}
 CRAN=${CRAN:-https://cran.r-project.org}
@@ -17,10 +16,6 @@ R_HOME=${R_HOME:-/usr/local/lib/R}
 
 READLINE_VERSION=8
 OPENBLAS=libopenblas-dev
-if [ ${UBUNTU_VERSION} == "bionic" ]; then
-  READLINE_VERSION=7
-  OPENBLAS=libopenblas-dev
-fi
 
 apt-get update \
   && apt-get install -y --no-install-recommends \
@@ -88,7 +83,6 @@ BUILDDEPS="curl \
     zlib1g-dev"
 
 apt-get install -y --no-install-recommends $BUILDDEPS
-
 
 if [[ "$R_VERSION" == "devel" ]]; then                               \
     wget https://stat.ethz.ch/R/daily/R-devel.tar.gz;                \

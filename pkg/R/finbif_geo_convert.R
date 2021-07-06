@@ -1,0 +1,367 @@
+#' FinBIF geo-conversion
+#'
+#' Convert FinBIF data to geographic formats.
+#'
+#' @param input Character or Integer. Either the path to a Zip archive or
+#'   tabular data file that has been downloaded from "laji.fi", a URI
+#'   linking to such a data file (e.g.,
+#'   [https://tun.fi/HBF.49381](https://tun.fi/HBF.49381)) or an integer
+#'   representing the URI (i.e., `49381`).
+#' @param output Character. Output file format in the form of a file extension.
+#'   See `show_formats()` for a list of available file formats. Use `"none"`
+#'   (default) to prevent writing output to a file.
+#' @param geo Character. Geometry of output. One of `"point"`, `"bbox"` or "
+#'   `"footprint"`.
+#' @param agg Character. Aggregate features to a grid in KKJ CRS. One of
+#'  `"1km"`, `"10km"`, `"1km_center"` or `"10km_center"`. Using the suffix
+#'   `"_center"` will aggregate based on the center point of the feature's
+#'    bounding box. Without, the aggregation is based on the entire bounding
+#'    box and those features with bounding boxes that encompass multiple grid
+#'    vertices will return NA.
+#' @param crs Character or Integer. Coordinate reference system of output. One
+#'   of `"euref"`, `"kkj"`, `"wgs84"` or integer indicating an EPSG code.
+#' @param select Character. Variables to include in the output attribute table.
+#'   Default is keyword `"all"` indicating all (non spatial) variables from
+#'   input data will be included in the output.
+#' @param n Integer. How many features to include. Negative and other invalid
+#'   values are ignored causing all features to be included.
+#' @param facts List. A named list of "facts" to extract from supplementary
+#'   "fact" files in an input data archive. Names can include one or more of
+#'   `"record"`, `"event"` or `"document"`. Elements of the list are character
+#'   vectors of the "facts" to be extracted and then joined to the return value.
+#' @param file_type Character. One of `"citable"` or `"lite"`. The type of input
+#'  file. Only required if `select != "all"`.
+#' @param locale Character. One of `"en"`. `"fi"` or `"sv"`. The locale of input
+#'  file. Only required if `select != "all"` and `file_type == "lite"`.
+#' @param ... Other options passed to `finbif::finbif_occurrence_load`.
+#'
+#' @return An `{sf}` package simple feature object (invisibly). And if
+#'   `output != "none"` then the spatial data file(s) will be written to the
+#'   current working directory.
+#'
+#' @importFrom dplyr across mutate rowwise transmute ungroup
+#' @importFrom finbif fb_occurrence_load from_schema
+#' @importFrom sf st_as_sf st_as_sfc st_crs st_geometry st_geometry_type
+#' @importFrom sf st_point st_transform
+#' @importFrom stringi stri_extract_all_regex stri_replace_na
+#' @importFrom tools file_ext file_path_sans_ext
+#'
+#' @export
+finbif_geo_convert <- function(
+  input, output = "none", geo = c("point", "bbox", "footprint"), agg = NULL,
+  crs = "wgs84", select = "all", n = -1, facts = list(), file_type = "citable",
+  locale = "en", ...
+) {
+
+  fmt <- switch(output, none = output, tools::file_ext(output))
+
+  stopifnot("Format not supported" = fmt %in% c("none", names(fmts)))
+
+  geo_col_names <- unlist(geo_components)
+
+  geo_cols <- switch(fmt, shp = short_geo_col_nms, geo_col_names)
+
+  names(geo_cols) <- geo_col_names
+
+  geo <- match.arg(geo)
+
+  agg <- switch(geo, point = agg, NULL)
+
+  geo <- paste(c(geo, agg), collapse = "_")
+
+  geo_crs <- paste(c(geo, crs), collapse = "_")
+
+  geo_crs_is_avail <- geo_crs %in% names(geo_components)
+
+  geo_crs_avail <- geo_crs
+
+  if (!geo_crs_is_avail) {
+
+    geo_crs_avail <- switch(
+      geo,
+      bbox = "euref",
+      point = "euref",
+      point_1km = "kkj",
+      point_10km = "kkj",
+      point_1km_center = "kkj",
+      point_10km_center = "kkj",
+      footprint = "wgs84"
+    )
+
+    geo_crs_avail <- paste(geo, geo_crs_avail, sep = "_")
+
+  }
+
+  spatial_data <- finbif::finbif_occurrence_load(
+    input, select = geo_components[[geo_crs_avail]], n = n, quiet = TRUE,
+    keep_tsv = TRUE, facts = facts
+  )
+
+  input <- switch(
+    tools::file_ext(input),
+    tsv = input,
+    ods = input,
+    xlsx = input,
+    zip = sprintf(
+      "%s/rows_%s.tsv", tempdir(), basename(tools::file_path_sans_ext(input))
+    ),
+    sprintf(
+      "%s/rows_HBF.%s.tsv", tempdir(),
+      stringi::stri_extract_all_regex(input, "\\d+")[[1L]]
+    )
+  )
+
+  spatial_data <- dplyr::rowwise(spatial_data)
+
+  spatial_data <- switch(
+    geo_crs_avail,
+    point_wgs84 = dplyr::mutate(
+      spatial_data, point_wgs84 = list(sf::st_point(c(lon_wgs84, lat_wgs84)))
+    ),
+    point_euref = dplyr::mutate(
+      spatial_data, point_euref = list(sf::st_point(c(lon_euref, lat_euref)))
+    ),
+    point_1km_kkj = dplyr::mutate(
+      spatial_data,
+      point_1km_kkj = list(sf::st_point(c(lon_1_kkj * 1e3, lat_1_kkj * 1e3)))
+    ),
+    point_10km_kkj = dplyr::mutate(
+      spatial_data,
+      point_10km_kkj = list(sf::st_point(c(lon_10_kkj * 1e4, lat_10_kkj * 1e4)))
+    ),
+    point_1km_center_kkj = dplyr::mutate(
+      spatial_data,
+      point_1km_center_kkj = list(
+        sf::st_point(c(lon_1_center_kkj * 1e3, lat_1_center_kkj * 1e3))
+      )
+    ),
+    point_10km_center_kkj = dplyr::mutate(
+      spatial_data,
+      point_10km_center_kkj = list(
+        sf::st_point(c(lon_10_center_kkj * 1e4, lat_10_center_kkj * 1e4))
+      )
+    ),
+    bbox_wgs84 = dplyr::mutate(
+      spatial_data,
+      bbox_wgs84 = bb(
+        lon_min_wgs84, lat_min_wgs84, lon_max_wgs84, lat_max_wgs84
+      )
+    ),
+    bbox_euref = dplyr::mutate(
+      spatial_data,
+      bbox_euref = bb(
+        lon_min_euref, lat_min_euref, lon_max_euref, lat_max_euref
+      )
+    ),
+    bbox_kkj = dplyr::mutate(
+      spatial_data,
+      bbox_kkj = bb(lon_min_kkj, lat_min_kkj, lon_max_kkj, lat_max_kkj)
+    ),
+    footprint_wgs84 = dplyr::mutate(
+      spatial_data,
+      footprint_wgs84 = stringi::stri_replace_na(footprint_wgs84, "POINT EMPTY")
+    )
+  )
+
+  spatial_data <- dplyr::ungroup(spatial_data)
+
+  spatial_data <- switch(
+    geo_crs_avail,
+    point_wgs84 = dplyr::transmute(
+      spatial_data,
+      point_wgs84 = sf::st_as_sfc(point_wgs84, crs = sf::st_crs(4326))
+    ),
+    point_euref = dplyr::transmute(
+      spatial_data,
+      point_euref = sf::st_as_sfc(point_euref, crs = sf::st_crs(3067))
+    ),
+    point_1km_kkj = dplyr::transmute(
+      spatial_data,
+      point_1km_kkj = sf::st_as_sfc(point_1km_kkj, crs = sf::st_crs(2393))
+    ),
+    point_10km_kkj = dplyr::transmute(
+      spatial_data,
+      point_10km_kkj = sf::st_as_sfc(point_10km_kkj, crs = sf::st_crs(2393))
+    ),
+    point_1km_center_kkj = dplyr::transmute(
+      spatial_data,
+      point_1km_center_kkj = sf::st_as_sfc(
+        point_1km_center_kkj, crs = sf::st_crs(2393)
+      )
+    ),
+    point_10km_center_kkj = dplyr::transmute(
+      spatial_data,
+      point_10km_center_kkj = sf::st_as_sfc(
+        point_10km_center_kkj, crs = sf::st_crs(2393)
+      )
+    ),
+    bbox_wgs84 = dplyr::transmute(
+      spatial_data,
+      bbox_wgs84 = sf::st_as_sfc(bbox_wgs84, crs = sf::st_crs(4326))
+    ),
+    bbox_euref = dplyr::transmute(
+      spatial_data,
+      bbox_euref = sf::st_as_sfc(bbox_euref, crs = sf::st_crs(3067))
+    ),
+    bbox_kkj = dplyr::transmute(
+      spatial_data, bbox_kkj = sf::st_as_sfc(bbox_kkj, crs = sf::st_crs(2393))
+    ),
+    footprint_wgs84 = dplyr::transmute(
+      spatial_data,
+      footprint_wgs84 = sf::st_as_sfc(footprint_wgs84, crs = sf::st_crs(4326))
+    )
+  )
+
+  if (!geo_crs_is_avail) {
+
+    crs <- switch(
+      as.character(crs), euref = 3067, kkj = 2393, wgs84 = 4326, crs
+    )
+
+    spatial_data[[geo_crs_avail]] <- sf::st_transform(
+      spatial_data[[geo_crs_avail]], sf::st_crs(crs)
+    )
+
+    names(spatial_data) <- geo_crs
+
+  }
+
+  sf::st_geometry(spatial_data) <- geo_crs
+
+  data <- finbif::finbif_occurrence_load(
+    input,
+    select = c(switch(fmt, shp = "short", "all"), paste0("-", geo_col_names)),
+    n = n, facts = facts, ...
+  )
+
+  col_type <- "native"
+
+  if (attr(data, "dwc")) {
+
+    col_type <- "dwc"
+
+  }
+
+  to <- switch(fmt, shp = "short", col_type)
+
+  data <- switch(
+    select,
+    all = data,
+    data[
+      ,
+      finbif::from_schema(select, to = to, file = file_type, locale = locale)
+    ]
+  )
+
+  data <- dplyr::mutate(data, dplyr::across(where(is.logical), as.integer))
+
+  if (identical(fmt, "shp")) {
+
+    geo_types <- as.character(sf::st_geometry_type(spatial_data))
+
+    unique_geo_types <- unique(geo_types)
+
+    data_list <- list()
+
+    for (i in unique_geo_types) {
+
+      ind <- geo_types == i
+
+      data_list[[i]] <- data[ind, ]
+
+      data_list[[i]] <- sf::st_as_sf(
+        cbind(data_list[[i]], spatial_data[ind, ]),
+        agr = stats::setNames(
+          rep_len("identity", length(data_list[[i]])), names(data_list[[i]])
+        )
+      )
+
+    }
+
+  } else {
+
+    data <- sf::st_as_sf(
+      cbind(data, spatial_data),
+      agr = stats::setNames(rep_len("identity", length(data)), names(data))
+    )
+
+  }
+
+  switch(
+    fmt,
+    none = NULL,
+    rds = saveRDS(data, output),
+    shp = shp_write(data_list, output),
+    sf::st_write(data, output)
+  )
+
+  invisible(data)
+
+}
+
+short_geo_col_nms <- c(
+  "lonWGS84", "latWGS84", "lonEUREF", "latEUREF", "lon1KKJ", "lat1KKJ",
+  "lon10KKJ", "lat10KKJ", "lon1cKKJ", "lat1cKKJ", "lon10cKKJ", "lat10cKKJ",
+  "lonMnWGS84", "latMnWGS84", "lonMxWGS84", "latMxWGS84", "lonMnEUREF",
+  "latMnEUREF", "lonMxEUREF", "latMxEUREF", "lonMnKKJ", "latMnKKJ", "lonMxKKJ",
+  "latMxKKJ", "fprntWGS84", "crd1KKJ", "crd1cKKJ", "crd10KKJ",
+  "crd10cKKJ"
+)
+
+geo_components <- list(
+  point_wgs84 = c("lon_wgs84", "lat_wgs84"),
+  point_euref = c("lon_euref", "lat_euref"),
+  point_1km_kkj = c("lon_1_kkj", "lat_1_kkj"),
+  point_10km_kkj = c("lon_10_kkj", "lat_10_kkj"),
+  point_1km_center_kkj = c("lon_1_center_kkj", "lat_1_center_kkj"),
+  point_10km_center_kkj = c("lon_10_center_kkj", "lat_10_center_kkj"),
+  bbox_wgs84 = c(
+    "lon_min_wgs84", "lat_min_wgs84", "lon_max_wgs84", "lat_max_wgs84"
+  ),
+  bbox_euref = c(
+    "lon_min_euref", "lat_min_euref", "lon_max_euref", "lat_max_euref"
+  ),
+  bbox_kkj = c("lon_min_kkj", "lat_min_kkj", "lon_max_kkj", "lat_max_kkj"),
+  footprint_wgs84 = "footprint_wgs84",
+  c(
+    "coordinates_1_kkj", "coordinates_1_center_kkj" ,"coordinates_10_kkj",
+    "coordinates_10_center_kkj"
+  )
+)
+
+#' @noRd
+#' @importFrom sf st_polygon
+bb <- function(x0, y0, x1, y1) {
+  ans <- c(x0, x0, x1, x1, x0, y0, y1, y1, y0, y0)
+  if (anyNA(ans)) return(NA)
+  ans <- matrix(ans, 5L)
+  list(sf::st_polygon(list(ans)))
+}
+
+#' @noRd
+#' @importFrom tidyselect vars_select_helpers
+where <- tidyselect::vars_select_helpers[["where"]]
+
+#' @noRd
+#' @importFrom sf st_write
+shp_write <- function(data, output) {
+
+  if (identical(length(data), 1L)) {
+
+    names(data) <- output
+
+  } else {
+
+    names(data) <- sprintf(
+      gsub("\\.shp$", "_%s.shp", output), tolower(names(data))
+    )
+
+  }
+
+  for (i in names(data)) {
+
+    st_write(data[[i]], i, layer_options = "ENCODING=UTF-8")
+
+  }
+
+}
