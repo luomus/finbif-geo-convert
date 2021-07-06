@@ -122,8 +122,8 @@ function(
       }
 
       fgc::finbif_geo_convert(
-        input, output, geo, agg, crs, select = select, facts = facts, dwc = dwc,
-        drop_na = !missing, filetype, locale
+        input, output, geo, agg, crs, select = select, facts = facts,
+        filetype = filetype, locale = locale, dwc = dwc, drop_na = !missing,
       )
 
       zip(

@@ -13,7 +13,7 @@ finbif_geo_convert(
   select = "all",
   n = -1,
   facts = list(),
-  file_type = "citable",
+  filetype = "citable",
   locale = "en",
   ...
 )
@@ -54,11 +54,11 @@ values are ignored causing all features to be included.}
 \code{"record"}, \code{"event"} or \code{"document"}. Elements of the list are character
 vectors of the "facts" to be extracted and then joined to the return value.}
 
-\item{file_type}{Character. One of \code{"citable"} or \code{"lite"}. The type of input
+\item{filetype}{Character. One of \code{"citable"} or \code{"lite"}. The type of input
 file. Only required if \code{select != "all"}.}
 
 \item{locale}{Character. One of \code{"en"}. \code{"fi"} or \code{"sv"}. The locale of input
-file. Only required if \code{select != "all"} and \code{file_type == "lite"}.}
+file. Only required if \code{select != "all"} and \code{filetype == "lite"}.}
 
 \item{...}{Other options passed to \code{finbif::finbif_occurrence_load}.}
 }
