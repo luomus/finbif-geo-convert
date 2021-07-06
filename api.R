@@ -242,7 +242,7 @@ function(pr) {
 
       spec$paths$`/{input}/{fmt}/{geo}/{crs}`$get$requestBody <- NULL
 
-      for (i in c("file_type", "locale")) {
+      for (i in c("filetype", "locale")) {
 
         pars <- spec$paths$`/{input}/{fmt}/{geo}/{crs}`$get$parameters
         ind <- which(vapply(pars, getElement, character(1L), "name") == i)
