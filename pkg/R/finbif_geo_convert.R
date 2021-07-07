@@ -103,10 +103,13 @@ finbif_geo_convert <- function(
     ods = input,
     xlsx = input,
     zip = sprintf(
-      "%s/rows_%s.tsv", tempdir(), basename(tools::file_path_sans_ext(input))
+      "%s/rows_%s.tsv",
+      dirname(input),
+      basename(tools::file_path_sans_ext(input))
     ),
     sprintf(
-      "%s/rows_HBF.%s.tsv", tempdir(),
+      "%s/rows_HBF.%s.tsv",
+      tempdir(),
       stringi::stri_extract_all_regex(input, "\\d+")[[1L]]
     )
   )
