@@ -5,6 +5,7 @@
 #* @apiVersion 0.1.0.9003
 #* @apiLicense list(name = "GPL-2.0", url = "https://opensource.org/licenses/GPL-2.0")
 #* @apiTag convert Geographic conversion.
+#* @apiTag formats File formats.
 
 #* @filter cors
 cors <- function(req, res) {
@@ -231,6 +232,16 @@ function(id, res) {
   out <- readBin(zip, "raw", n = file.info(zip)$size)
 
   plumber::as_attachment(out, zip)
+
+}
+
+#* Get the available output file formats
+#* @get /formats
+#* @tag formats
+#* @serializer unboxedJSON
+function() {
+
+  as.list(show_formats())
 
 }
 
