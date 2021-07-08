@@ -5,6 +5,7 @@ library(future)
 library(later)
 library(plumber)
 library(promises)
+library(rapidoc)
 library(tools)
 
 future::plan("multicore")

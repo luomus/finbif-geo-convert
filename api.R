@@ -1,11 +1,9 @@
 #* @apiTitle FinBIF Geographic Data Conversion API
-#* @apiDescription Convert FinBIF occurrence data into geographic data formats
 #* @apiTOS https://laji.fi/en/about/845
 #* @apiContact list(name = "laji.fi support", email = "helpdesk@laji.fi")
-#* @apiVersion 0.1.0.9003
 #* @apiLicense list(name = "GPL-2.0", url = "https://opensource.org/licenses/GPL-2.0")
-#* @apiTag convert Geographic conversion.
-#* @apiTag formats File formats.
+#* @apiTag convert Convert a FinBIF occurrence data file into a geographic data format
+#* @apiTag formats Output File Formats
 
 #* @filter cors
 cors <- function(req, res) {
@@ -32,21 +30,22 @@ cors <- function(req, res) {
 
 }
 
-#* Convert a FinBIF occurrence data object into a geographic data format
+#* Convert FinBIF data file with persistent identifier
 #* @get /<input:int>/<fmt:str>/<geo:str>/<crs:str>
 #* @post /<input:int>/<fmt:str>/<geo:str>/<crs:str>
-#* @param agg:str Aggregation. 1km, 1km_center, 10km or 10km_center. Ignored if `geo!=point`.
+#* @param input:int The integer representation of the input file's identifier
+#* @param agg:str Aggregation. 1km, 1km_center, 10km or 10km_center. Ignored if `geo != point`.
 #* @param select:str Which variables to select? Multiple values comma separated.
 #* @param rfcts:str Record level facts. Multiple values comma separated.
 #* @param efcts:str Event level facts. Multiple values comma separated.
 #* @param dfcts:str Document level facts. Multiple values comma separated.
-#* @param dwc:bool Use Darwin Core style column names? Ignored if `fmt==shp`.
+#* @param dwc:bool Use Darwin Core style column names? Ignored if `fmt == shp`.
 #* @param missing:bool Keep columns containing missing data only?
 #* @param timeout:dbl How long should the server be allowed to wait (in seconds) until responding (max allowed is 60)?
 #* @param persist:int How long (in hours) after the request is made should the output file still be available (max 24 hours)?
 #* @param file:file File to convert (maximum allowed size is ~100mb).
-#* @param filetype:str One of "citable" or "lite". Only needed if `select!=all`
-#* @param locale:str One of "en", "fi", or "sv". Only needed if `select!=all`
+#* @param filetype:str One of "citable" or "lite". Only needed if `select != all`
+#* @param locale:str One of "en", "fi", or "sv". Only needed if `select != all`
 #* @tag convert
 #* @serializer unboxedJSON
 function(
@@ -248,9 +247,15 @@ function() {
 #* @plumber
 function(pr) {
 
+  version <- as.character(utils::packageVersion("fgc"))
+
   plumber::pr_set_api_spec(
     pr,
     function(spec) {
+
+      spec$info$version <- version
+
+      spec$info$description <- readChar("api.md", file.info("api.md")$size)
 
       spec$paths$`/{input}/{fmt}/{geo}/{crs}`$get$requestBody <- NULL
 
@@ -262,9 +267,26 @@ function(pr) {
 
       }
 
+      spec$paths$`/{input}/{fmt}/{geo}/{crs}`$get$description <- paste0(
+        "Convert a FinBIF citable data download file to a geographic data ",
+        "format via its persistent identifier."
+      )
+
       spec
 
     }
+  )
+
+  pr$setDocs(
+    "rapidoc",
+    bg_color = "#2691d9",
+    text_color = "#ffffff",
+    primary_color = "#2c3e50",
+    render_style = "read",
+    slots = '<img slot="logo" src="https://cran.r-project.org/web/packages/finbif/readme/man/figures/logo.png" width=36px style=\"margin-left:7px\"/>',
+    heading_text = paste("FGC", version),
+    regular_font = "Roboto, Helvetica Neue, Helvetica, Arial, sans-serif",
+    font_size = "largest"
   )
 
 }

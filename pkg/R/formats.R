@@ -19,7 +19,7 @@ fmts <- structure(
     gxt = "Geoconcept",
     jml = "OpenJUMP JML",
     nc = "Network Common Data Format",
-    ods = "Open Document/ LibreOffice / OpenOffice Spreadsheet",
+    ods = "Open Document / LibreOffice / OpenOffice Spreadsheet",
     rds = "R data serialised ({sf} simple features)",
     shp = "ESRI Shapefile",
     sqlite = "SQLite / Spatialite",

@@ -32,10 +32,13 @@ RUN install2.r -s -e \
   e1071 \
   fastmap \
   future \
+  httr \
   later \
+  lutz \
   plumber \
   promises \
   proxy \
+  rapidoc \
   remotes \
   readODS \
   readxl \
@@ -44,6 +47,8 @@ RUN install2.r -s -e \
   units \
   tidyr \
   wk
+
+RUN sed -i 's/RapiDoc/FinBIF Geo-convert/g' /usr/local/lib/R/site-library/rapidoc/dist/index.html
 
 RUN add-apt-repository ppa:ubuntugis/ubuntugis-unstable \
  && apt-get install -y --no-install-recommends \
@@ -68,6 +73,7 @@ COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY convert.r /usr/local/bin/convert
 COPY init.R /home/user/init.R
 COPY api.R /home/user/api.R
+COPY api.md /home/user/api.md
 
 RUN  chgrp -R 0 /home/user \
   && chmod -R g=u /home/user /etc/passwd
