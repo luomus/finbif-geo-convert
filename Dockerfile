@@ -33,6 +33,7 @@ RUN install2.r -s -e \
   fastmap \
   future \
   httr \
+  logger \
   later \
   lutz \
   plumber \
@@ -46,9 +47,11 @@ RUN install2.r -s -e \
   stringi \
   units \
   tidyr \
+  tictoc \
   wk
 
-RUN sed -i 's/RapiDoc/FinBIF Geo-convert/g' /usr/local/lib/R/site-library/rapidoc/dist/index.html
+RUN sed -i 's/RapiDoc/FinBIF Geo-convert/g' \
+      /usr/local/lib/R/site-library/rapidoc/dist/index.html
 
 RUN add-apt-repository ppa:ubuntugis/ubuntugis-unstable \
  && apt-get install -y --no-install-recommends \
@@ -71,7 +74,7 @@ ENV OPENBLAS_NUM_THREADS 1
 
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY convert.r /usr/local/bin/convert
-COPY init.R /home/user/init.R
+COPY init.r /usr/local/bin/init
 COPY api.R /home/user/api.R
 COPY api.md /home/user/api.md
 
@@ -86,4 +89,4 @@ EXPOSE 8000
 
 ENTRYPOINT ["entrypoint.sh"]
 
-CMD ["Rscript", "--verbose", "init.R"]
+CMD ["init"]

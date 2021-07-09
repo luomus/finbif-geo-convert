@@ -58,7 +58,7 @@ function(
   persist <- pmax(persist, 1L)
   persist <- pmin(persist, 24L)
 
-  id <- paste0(as.hexmode(sample(1e9L, 1L)))
+  id <- digest::digest(list(req, sample(1e9L, 1L)))
 
   dir.create(id)
 
@@ -129,7 +129,7 @@ function(
       zip(
         paste0(output, ".zip"),
         setdiff(list.files(id, full.names = TRUE), input),
-        flags = "-rj9X"
+        flags = "-rj9qX"
       )
 
     },

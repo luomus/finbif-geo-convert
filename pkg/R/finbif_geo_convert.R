@@ -234,7 +234,7 @@ finbif_geo_convert <- function(
   data <- finbif::finbif_occurrence_load(
     input,
     select = c(switch(fmt, shp = "short", "all"), paste0("-", geo_col_names)),
-    n = n, facts = facts, ...
+    n = n, quiet = TRUE, facts = facts, ...
   )
 
   col_type <- "native"
@@ -295,13 +295,14 @@ finbif_geo_convert <- function(
     none = NULL,
     rds = saveRDS(data, output),
     shp = shp_write(data_list, output),
-    sf::st_write(data, output)
+    sf::st_write(data, output, quiet = TRUE)
   )
 
   invisible(data)
 
 }
 
+#' @noRd
 short_geo_col_nms <- c(
   "lonWGS84", "latWGS84", "lonEUREF", "latEUREF", "lon1KKJ", "lat1KKJ",
   "lon10KKJ", "lat10KKJ", "lon1cKKJ", "lat1cKKJ", "lon10cKKJ", "lat10cKKJ",
@@ -311,6 +312,7 @@ short_geo_col_nms <- c(
   "crd10cKKJ"
 )
 
+#' @noRd
 geo_components <- list(
   point_wgs84 = c("lon_wgs84", "lat_wgs84"),
   point_euref = c("lon_euref", "lat_euref"),
@@ -363,7 +365,7 @@ shp_write <- function(data, output) {
 
   for (i in names(data)) {
 
-    st_write(data[[i]], i, layer_options = "ENCODING=UTF-8")
+    st_write(data[[i]], i, layer_options = "ENCODING=UTF-8", quiet = TRUE)
 
   }
 

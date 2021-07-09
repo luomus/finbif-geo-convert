@@ -1,13 +1,13 @@
 #!/usr/bin/env r
 #
-# FinBIF geo-conversion
+# FinBIF geo-conversion CLI
 #
 # Copyright (C) 2021 LUOMUS - Finnish Museum of Natural History
 #
 # Released under GPL (>= 2)
 
-library(docopt)
-library(fgc)
+library(docopt, quietly = TRUE)
+library(fgc, quietly = TRUE)
 
 doc <- "Usage: convert [-h] [-x] [-o OUT] [-g GEO] [-a AGG] [-c CRS] [-s SLCT...] [-n NROWS] [-r RFCT...] [-e EFCT...] [-d DFCT...] [-t TYPE] [-l LC] [-w] [-m] [FILE]
 
