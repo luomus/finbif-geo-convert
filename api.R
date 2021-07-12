@@ -194,7 +194,7 @@ function(id, timeout = 30L, res) {
 
       timer <- 0
 
-      while (length(zip) < 1L) {
+      while (length(status) < 1L) {
 
         status <- list.files(id, pattern = "^HBF.*\\.zip$")
 
