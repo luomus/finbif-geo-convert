@@ -2,8 +2,9 @@
 #* @apiTOS https://laji.fi/en/about/845
 #* @apiContact list(name = "laji.fi support", email = "helpdesk@laji.fi")
 #* @apiLicense list(name = "GPL-2.0", url = "https://opensource.org/licenses/GPL-2.0")
+#* @apiTag formats Output file formats
 #* @apiTag convert Convert a FinBIF occurrence data file into a geographic data format
-#* @apiTag formats Output File Formats
+
 
 #* @filter cors
 cors <- function(req, res) {
@@ -30,10 +31,24 @@ cors <- function(req, res) {
 
 }
 
+#* Get a list of output file formats
+#* @get /formats
+#* @tag formats
+#* @response 200 A json object
+#* @serializer unboxedJSON
+function() {
+  fmts <- show_formats()
+  list(formats = data.frame(name = names(fmts), description = unname(c(fmts))))
+
+}
+
 #* Convert FinBIF data file with persistent identifier
 #* @get /<input:int>/<fmt:str>/<geo:str>/<crs:str>
 #* @post /<input:int>/<fmt:str>/<geo:str>/<crs:str>
-#* @param input:int The integer representation of the input file's identifier
+#* @param input:int The integer representation of the input file's identifier.
+#* @param fmt:str The output file format (in the form of a file extension) for the geographic data.
+#* @param geo:str The geometry type of the output. One of 'point', 'bbox' or 'footprint'.
+#* @param crs:str The coordinate reference system for the output. One of "kkj", "euref", "wgs84" or any valid numeric EPSG code.
 #* @param agg:str Aggregation. 1km, 1km_center, 10km or 10km_center. Ignored if `geo != point`.
 #* @param select:str Which variables to select? Multiple values comma separated.
 #* @param rfcts:str Record level facts. Multiple values comma separated.
@@ -47,6 +62,7 @@ cors <- function(req, res) {
 #* @param filetype:str One of "citable" or "lite". Only needed if `select != all`
 #* @param locale:str One of "en", "fi", or "sv". Only needed if `select != all`
 #* @tag convert
+#* @response 303 A json object
 #* @serializer unboxedJSON
 function(
   input, fmt, geo, crs, agg = "none", select = "all", rfcts = "none",
@@ -143,13 +159,18 @@ function(
   res$status <- 303L
   res$setHeader("Location", paste0("/status/", id, "?timeout=", timeout))
 
-  id
+  c(id = id)
 
 }
 
+#* Get status of conversion
 #* @get /status/<id:str>
+#* @param id:str The identifier of a conversion.
 #* @param timeout:dbl How long should the server be allowed to wait (in seconds) until responding (max allowed is 60).
 #* @tag convert
+#* @response 200 A json object
+#* @response 303 A json object
+#* @response 404 File not found
 #* @serializer unboxedJSON
 function(id, timeout = 30L, res) {
 
@@ -163,7 +184,7 @@ function(id, timeout = 30L, res) {
   poll <- promises::future_promise(
     {
 
-      zip <- character()
+      status <- character()
 
       sleep <- .1
 
@@ -175,13 +196,13 @@ function(id, timeout = 30L, res) {
 
       while (length(zip) < 1L) {
 
-        zip <- list.files(id, pattern = "^HBF.*\\.zip$")
+        status <- list.files(id, pattern = "^HBF.*\\.zip$")
 
         timer <- timer + sleep
 
         if (timer > timeout) {
 
-          zip <- "pending"
+          status <- "pending"
 
         }
 
@@ -189,7 +210,7 @@ function(id, timeout = 30L, res) {
 
       }
 
-      zip
+      status
 
     },
     globals = c("id", "timeout")
@@ -204,17 +225,24 @@ function(id, timeout = 30L, res) {
         res$status <- 303L
         res$setHeader("Location", paste0("/output/", id))
 
-      }
+        list(id = id, status = "complete")
 
-      .
+      } else {
+
+        list(id = id, status = .)
+
+      }
 
     }
   )
 
 }
-
+#* Get the output file of conversion
 #* @get /output/<id:str>
+#* @param id:str The identifier of a conversion.
 #* @tag convert
+#* @response 200 A ZIP archive file attachment
+#* @response 404 File not found
 #* @serializer contentType list(type="application/zip")
 function(id, res) {
 
@@ -234,15 +262,8 @@ function(id, res) {
 
 }
 
-#* Get the available output file formats
-#* @get /formats
-#* @tag formats
-#* @serializer unboxedJSON
-function() {
-
-  as.list(show_formats())
-
-}
+#* @assets /usr/local/lib/R/site-library/finbif/help/figures
+list()
 
 #* @plumber
 function(pr) {
@@ -256,6 +277,97 @@ function(pr) {
       spec$info$version <- version
 
       spec$info$description <- readChar("api.md", file.info("api.md")$size)
+
+      spec$paths$`/formats`$get$description <- paste0(
+        "Get a list of geographic data file formats that FinBIF occurrence can ",
+        "be converted to as a JSON object."
+      )
+      spec$paths$`/formats`$get$responses$`500`$content <- NULL
+      spec$paths$`/formats`$get$responses$default <- NULL
+      spec$paths$`/formats`$get$responses$`200`$content$`application/json`$schema <- list(
+        type = "object",
+        properties = list(
+          formats = list(
+            type = "array",
+            items = list(
+              type = "object",
+              required = c("name", "description"),
+              properties = list(
+                name = list(
+                  type = "string",
+                  description = "File extension."
+                ),
+                description = list(
+                  type = "string",
+                  description = "File format description."
+                )
+              )
+            )
+          )
+        )
+      )
+
+      spec$paths$`/formats`$get$responses$`200`$content$`application/json`$example <- list(
+        formats = data.frame(
+          name = c("ext1", "ext2"),
+          description = c(
+            "File format description 1", "File format description 2"
+          )
+        )
+      )
+
+      spec$paths$`/{input}/{fmt}/{geo}/{crs}`$post$summary <-
+        "Convert FinBIF data file via data upload"
+
+      spec$paths$`/{input}/{fmt}/{geo}/{crs}`$post$description <- paste0(
+        "Convert a FinBIF citable or lite data file to a geographic data ",
+        "format via upload."
+      )
+
+      spec$paths$`/{input}/{fmt}/{geo}/{crs}`$post$parameters[[1]]$description <- paste0(
+        "An integer identifier for the geographic data file. ",
+        "Will be used in the filename of the download."
+      )
+
+      spec$paths$`/{input}/{fmt}/{geo}/{crs}`$get$parameters[[1]]$example <-
+        1234
+
+      spec$paths$`/{input}/{fmt}/{geo}/{crs}`$get$parameters[[2]]$example <-
+        "gpkg"
+
+      spec$paths$`/{input}/{fmt}/{geo}/{crs}`$get$parameters[[3]]$example <-
+        "point"
+
+      spec$paths$`/{input}/{fmt}/{geo}/{crs}`$get$parameters[[4]]$example <-
+        "wgs84"
+
+      spec$paths$`/{input}/{fmt}/{geo}/{crs}`$post$responses$`500`$content <- NULL
+      spec$paths$`/{input}/{fmt}/{geo}/{crs}`$post$responses$default <- NULL
+      spec$paths$`/{input}/{fmt}/{geo}/{crs}`$post$responses$`200` <- NULL
+
+      spec$paths$`/{input}/{fmt}/{geo}/{crs}`$post$responses$`303`$content$`application/json`$schema <- list(
+        type = "object",
+        required = "id",
+        properties = list(
+          id = list(
+            type = "string",
+            description = "Identifier of the file conversion.",
+            example = "17ecf252"
+          )
+        )
+      )
+
+      spec$paths$`/{input}/{fmt}/{geo}/{crs}`$post$parameters[[1]]$example <-
+        53254
+
+      spec$paths$`/{input}/{fmt}/{geo}/{crs}`$post$parameters[[2]]$example <-
+        "gpkg"
+
+      spec$paths$`/{input}/{fmt}/{geo}/{crs}`$post$parameters[[3]]$example <-
+        "point"
+
+      spec$paths$`/{input}/{fmt}/{geo}/{crs}`$post$parameters[[4]]$example <-
+        "wgs84"
 
       spec$paths$`/{input}/{fmt}/{geo}/{crs}`$get$requestBody <- NULL
 
@@ -272,6 +384,74 @@ function(pr) {
         "format via its persistent identifier."
       )
 
+      spec$paths$`/{input}/{fmt}/{geo}/{crs}`$get$responses$`303`$content$`application/json`$schema <- list(
+        type = "object",
+        required = "id",
+        properties = list(
+          id = list(
+            type = "string",
+            description = "Identifier of the file conversion.",
+            example = "17ecf252"
+          )
+        )
+      )
+
+      spec$paths$`/{input}/{fmt}/{geo}/{crs}`$get$responses$`500`$content <- NULL
+      spec$paths$`/{input}/{fmt}/{geo}/{crs}`$get$responses$default <- NULL
+      spec$paths$`/{input}/{fmt}/{geo}/{crs}`$get$responses$`200` <- NULL
+
+      spec$paths$`/status/{id}`$get$description <-
+        "Get the status of a conversion using an identifier."
+
+      spec$paths$`/status/{id}`$get$parameters[[1]]$example <- "17ecf252"
+
+      spec$paths$`/status/{id}`$get$responses$`500`$content <- NULL
+      spec$paths$`/status/{id}`$get$responses$`404`$content <- NULL
+      spec$paths$`/status/{id}`$get$responses$default <- NULL
+
+      spec$paths$`/status/{id}`$get$responses$`200`$content$`application/json`$schema <- list(
+        type = "object",
+        required = c("id", "status"),
+        properties = list(
+          id = list(
+            type = "string",
+            description = "Identifier of the file conversion.",
+            example = "17ecf252"
+          ),
+          status = list(
+            type = "string",
+            description = "Status of the conversion.",
+            example = "pending"
+          )
+        )
+      )
+
+      spec$paths$`/status/{id}`$get$responses$`303`$content$`application/json`$schema <- list(
+        type = "object",
+        required = c("id", "status"),
+        properties = list(
+          id = list(
+            type = "string",
+            description = "Identifier of the file conversion.",
+            example = "17ecf252"
+          ),
+          status = list(
+            type = "string",
+            description = "Status of the conversion.",
+            example = "complete"
+          )
+        )
+      )
+
+
+      spec$paths$`/output/{id}`$get$description <-
+        "Get the output file of a conversion using an identifier."
+
+      spec$paths$`/output/{id}`$get$parameters[[1]]$example <- "17ecf252"
+
+      spec$paths$`/output/{id}`$get$responses$`500`$content <- NULL
+      spec$paths$`/output/{id}`$get$responses$default <- NULL
+
       spec
 
     }
@@ -283,10 +463,18 @@ function(pr) {
     text_color = "#ffffff",
     primary_color = "#2c3e50",
     render_style = "read",
-    slots = '<img slot="logo" src="https://cran.r-project.org/web/packages/finbif/readme/man/figures/logo.png" width=36px style=\"margin-left:7px\"/>',
+    slots = paste0(
+      '<img ',
+      'slot="logo" ',
+      'src="../public/logo.png" ',
+      'width=36px style=\"margin-left:7px\"/>'
+    ),
     heading_text = paste("FGC", version),
     regular_font = "Roboto, Helvetica Neue, Helvetica, Arial, sans-serif",
-    font_size = "largest"
+    font_size = "largest",
+    sort_tags = "false",
+    sort_endpoints_by = "summary",
+    allow_spec_file_load = "false"
   )
 
 }
