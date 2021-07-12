@@ -47,8 +47,14 @@ p$registerHooks(
   list(
     preroute = function() tictoc::tic(),
     postroute = function(req, res) {
+
       end <- tictoc::toc(quiet = TRUE)
-      logger::log_info(
+
+      log_fn <- logger::log_info
+
+      if (res$status >= 400L) log_fn <- logger::log_error
+
+      log_fn(
         paste0(
           '{convert_empty(req$REMOTE_ADDR)} ',
           '"{convert_empty(req$HTTP_USER_AGENT)}" ',
@@ -59,6 +65,7 @@ p$registerHooks(
           '{round(end$toc - end$tic, digits = getOption("digits", 5L))}'
         )
       )
+
     }
   )
 )

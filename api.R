@@ -137,16 +137,27 @@ function(
 
       }
 
-      fgc::finbif_geo_convert(
-        input, output, geo, agg, crs, select = select, facts = facts,
-        filetype = filetype, locale = locale, dwc = dwc, drop_na = !missing,
+      res <- try(
+        fgc::finbif_geo_convert(
+          input, output, geo, agg, crs, select = select, facts = facts,
+          filetype = filetype, locale = locale, dwc = dwc, drop_na = !missing,
+        ),
+        silent = TRUE
       )
 
-      zip(
-        paste0(output, ".zip"),
-        setdiff(list.files(id, full.names = TRUE), input),
-        flags = "-rj9qX"
-      )
+      if (inherits(res, "try-error")) {
+
+         writeLines(res[[1L]], paste0(id, "/error.txt"))
+
+      } else {
+
+        zip(
+          paste0(output, ".zip"),
+          setdiff(list.files(id, full.names = TRUE), input),
+          flags = "-rj9qX"
+        )
+
+      }
 
     },
     globals = c(
@@ -170,6 +181,7 @@ function(
 #* @tag convert
 #* @response 200 A json object
 #* @response 303 A json object
+#* @response 400 Client error
 #* @response 404 File not found
 #* @serializer unboxedJSON
 function(id, timeout = 30L, res) {
@@ -206,6 +218,14 @@ function(id, timeout = 30L, res) {
 
         }
 
+        err <- paste0(id, "/error.txt")
+
+        if (file.exists(err)) {
+
+          status <- "error"
+
+        }
+
         Sys.sleep(sleep)
 
       }
@@ -220,16 +240,24 @@ function(id, timeout = 30L, res) {
     poll,
     ~{
 
-      if (!identical(., "pending")) {
+      if (identical(., "pending")) {
+
+         list(id = id, status = .)
+
+      } else if (identical(., "error")) {
+
+        res$status <- 400L
+
+        error <- paste0(id, "/error.txt")
+
+        list(id = id, error = readChar(error, file.info(error)$size))
+
+      } else {
 
         res$status <- 303L
         res$setHeader("Location", paste0("/output/", id))
 
         list(id = id, status = "complete")
-
-      } else {
-
-        list(id = id, status = .)
 
       }
 
@@ -407,6 +435,7 @@ function(pr) {
 
       spec$paths$`/status/{id}`$get$responses$`500`$content <- NULL
       spec$paths$`/status/{id}`$get$responses$`404`$content <- NULL
+      spec$paths$`/status/{id}`$get$responses$`400`$content <- NULL
       spec$paths$`/status/{id}`$get$responses$default <- NULL
 
       spec$paths$`/status/{id}`$get$responses$`200`$content$`application/json`$schema <- list(
