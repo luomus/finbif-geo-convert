@@ -78,7 +78,8 @@ COPY init.r /usr/local/bin/init
 COPY api.R /home/user/api.R
 COPY api.md /home/user/api.md
 
-RUN  chgrp -R 0 /home/user \
+RUN  mkdir -p /home/user/logs \
+  && chgrp -R 0 /home/user \
   && chmod -R g=u /home/user /etc/passwd
 
 WORKDIR /home/user

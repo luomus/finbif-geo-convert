@@ -17,6 +17,7 @@ pkgs <- c(
   "plumber",
   "promises",
   "rapidoc",
+  "tictoc",
   "tools"
 )
 
@@ -33,7 +34,7 @@ future::plan("multicore")
 options(plumber.maxRequestSize = 1e8L)
 
 log_dir <- "logs"
-dir.create(log_dir)
+
 log_file <- tempfile("plumber_", log_dir, ".log")
 logger::log_appender(
   logger::appender_tee(log_file)
