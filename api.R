@@ -4,7 +4,7 @@
 #* @apiLicense list(name = "GPL-2.0", url = "https://opensource.org/licenses/GPL-2.0")
 #* @apiTag formats Output file formats
 #* @apiTag convert Convert a FinBIF occurrence data file into a geographic data format
-
+#* @apiTag status Check status of API
 
 #* @filter cors
 cors <- function(req, res) {
@@ -29,6 +29,15 @@ cors <- function(req, res) {
 
   }
 
+}
+
+#* Check the liveness of the API
+#* @get /healthz
+#* @tag status
+#* @response 200 A json object
+#* @serializer unboxedJSON
+function() {
+ ""
 }
 
 #* Get a list of output file formats
@@ -480,6 +489,9 @@ function(pr) {
 
       spec$paths$`/output/{id}`$get$responses$`500`$content <- NULL
       spec$paths$`/output/{id}`$get$responses$default <- NULL
+
+      spec$paths$`/healthz`$get$responses$`500`$content <- NULL
+      spec$paths$`/healthz`$get$responses$default <- NULL
 
       spec
 

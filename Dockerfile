@@ -16,6 +16,7 @@ RUN /install_R.sh
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
+      curl \
       libssl-dev \
       libudunits2-dev \
       software-properties-common \
@@ -68,6 +69,9 @@ RUN installGithub.r luomus/finbif@06c6cf4
 COPY pkg fgc
 
 RUN R -e "remotes::install_local('fgc')"
+
+HEALTHCHECK --interval=1m --timeout=10s \
+  CMD curl -sf -o /dev/null -r 0-0 0.0.0.0:8000/healthz || exit 1
 
 ENV HOME /home/user
 ENV OPENBLAS_NUM_THREADS 1

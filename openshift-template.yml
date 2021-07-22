@@ -7,6 +7,9 @@ parameters:
   - name: APP_PORT
     required: true
     value: "8000"
+  - name: STATUS
+    required: true
+    value: /healthz
   - name: LOG
     required: true
     value: log-monitor
@@ -107,6 +110,24 @@ objects:
           volumeMounts:
           - mountPath: ${LOG_DIR}
             name: ${LOG}
+          startupProbe:
+            httpGet:
+              path: ${STATUS}
+              port: ${{APP_PORT}}
+            failureThreshold: 30
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: ${STATUS}
+              port: ${{APP_PORT}}
+            failureThreshold: 5
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: ${STATUS}
+              port: ${{APP_PORT}}
+            initialDelaySeconds: 5
+            periodSeconds: 5
         volumes:
         - name: ${LOG}
           persistentVolumeClaim:
@@ -146,6 +167,21 @@ objects:
           volumeMounts:
           - mountPath: ${LOG_DIR}
             name: ${LOG}
+          startupProbe:
+            httpGet:
+              port: ${{LOG_PORT}}
+            failureThreshold: 30
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              port: ${{LOG_PORT}}
+            failureThreshold: 5
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              port: ${{LOG_PORT}}
+            initialDelaySeconds: 5
+            periodSeconds: 5
         volumes:
         - name: ${LOG}
           persistentVolumeClaim:
