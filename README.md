@@ -6,6 +6,22 @@ Convert FinBIF occurrence data downloads to various geographic file formats
 
 See online [documentation](https://fgc.rahtiapp.fi/__docs__/) for details.
 
+### Deploy
+
+#### Docker compose
+
+```bash
+docker-compose up -d
+```
+
+#### Openshift
+
+```bash
+oc new-app -f openshift-template.yml \
+  -p APP_HOST=<app-host-url> \
+  -p LOG_HOST=<log-host-url>
+```
+
 ## CLI
 
 ### Requirements
