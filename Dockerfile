@@ -71,7 +71,7 @@ COPY pkg fgc
 RUN R -e "remotes::install_local('fgc')"
 
 HEALTHCHECK --interval=1m --timeout=10s \
-  CMD curl -sf -o /dev/null -r 0-0 0.0.0.0:8000/healthz || exit 1
+  CMD curl -sfI -o /dev/null 0.0.0.0:8000/healthz || exit 1
 
 ENV HOME /home/user
 ENV OPENBLAS_NUM_THREADS 1
