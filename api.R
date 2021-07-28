@@ -303,7 +303,7 @@ function(id, res) {
 #* @assets /usr/local/lib/R/site-library/finbif/help/figures
 list()
 
-#* @assets ./favicon.ico /favicon.ico
+#* @assets ./static /
 list()
 
 #* @plumber
