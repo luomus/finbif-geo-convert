@@ -13,7 +13,7 @@ services:
     image: ghcr.io/luomus/log-monitor
     restart: unless-stopped
     environment:
-      - "PAGE_TITLE='FinBIF geo-convert'"
+      - "PAGE_TITLE='finbif-geo-convert'"
     ports:
       - "3838:3838"
     volumes:
