@@ -303,9 +303,6 @@ function(id, res) {
 #* @assets /usr/local/lib/R/site-library/finbif/help/figures
 list()
 
-#* @assets ./static /
-list()
-
 #* @plumber
 function(pr) {
 
