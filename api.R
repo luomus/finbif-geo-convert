@@ -303,6 +303,14 @@ function(id, res) {
 #* @assets /usr/local/lib/R/site-library/finbif/help/figures
 list()
 
+#* @get /favicon.ico
+#* @serializer contentType list(type="image/x-icon")
+function() {
+
+  readBin("favicon.ico", "raw", n = file.info("favicon.ico")$size)
+
+}
+
 #* @plumber
 function(pr) {
 
@@ -491,8 +499,8 @@ function(pr) {
       spec$paths$`/output/{id}`$get$responses$`500`$content <- NULL
       spec$paths$`/output/{id}`$get$responses$default <- NULL
 
-      spec$paths$`/healthz`$get$responses$`500`$content <- NULL
-      spec$paths$`/healthz`$get$responses$default <- NULL
+      spec$paths$`/healthz` <- NULL
+      spec$paths$`/favicon.ico` <- NULL
 
       spec
 
