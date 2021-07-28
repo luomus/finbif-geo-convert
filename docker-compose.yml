@@ -3,6 +3,7 @@ version: "3.7"
 services:
   convert:
     build:
+      context: .
       dockerfile: Dockerfile
     restart: unless-stopped
     ports:
