@@ -81,6 +81,7 @@ COPY convert.r /usr/local/bin/convert
 COPY init.r /usr/local/bin/init
 COPY api.R /home/user/api.R
 COPY api.md /home/user/api.md
+COPY favicon.ico /home/user/favicon.ico
 
 RUN  mkdir -p /home/user/logs \
   && chgrp -R 0 /home/user \
