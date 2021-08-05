@@ -49,5 +49,5 @@ home directory.
 ### Documentation
 
 ```bash
-docker run ghcr.io/luomus/finbif-geo-convert convert --help
+docker run --rm ghcr.io/luomus/finbif-geo-convert convert --help
 ```

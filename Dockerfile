@@ -25,6 +25,7 @@ RUN apt-get update \
  && rm -rf /var/lib/apt/lists/*
 
 RUN install2.r -s -e \
+  callr \
   classInt \
   cpp11 \
   data.table \
@@ -47,8 +48,11 @@ RUN install2.r -s -e \
   s2 \
   stringi \
   units \
-  tidyr \
   tictoc \
+  tidyr \
+  tinytest \
+  webfakes \
+  withr \
   wk
 
 RUN sed -i 's/RapiDoc/FinBIF Geo-convert/g' \
@@ -64,7 +68,7 @@ RUN add-apt-repository ppa:ubuntugis/ubuntugis-unstable \
 
 RUN install2.r -s -e -r cran.r-project.org sf
 
-RUN installGithub.r luomus/finbif@06c6cf4
+RUN installGithub.r luomus/finbif@0413f032
 
 COPY pkg fgc
 
@@ -84,8 +88,8 @@ COPY api.md /home/user/api.md
 COPY favicon.ico /home/user/favicon.ico
 
 RUN  mkdir -p /home/user/logs \
-  && chgrp -R 0 /home/user \
-  && chmod -R g=u /home/user /etc/passwd
+  && chgrp -R 0 /home/user /usr/local/lib/R/site-library/fgc/tinytest \
+  && chmod -R g=u /home/user /usr/local/lib/R/site-library/fgc/tinytest /etc/passwd
 
 WORKDIR /home/user
 

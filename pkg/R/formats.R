@@ -32,7 +32,7 @@ fmts <- structure(
 #' @export
 print.fmts <- function(x, ...) {
   cat("Extension | Description\n")
-  cat("----------+----------------------------------------------------\n")
+  cat("----------+-----------------------------------------------------\n")
   for (i in names(x)) {
     cat(
       i, x[[i]],

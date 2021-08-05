@@ -8,6 +8,7 @@
 
 library(docopt, quietly = TRUE)
 library(fgc, quietly = TRUE)
+library(utils, quietly = TRUE)
 
 doc <- "Usage: convert [-h] [-x] [-o OUT] [-g GEO] [-a AGG] [-c CRS] [-s SLCT...] [-n NROWS] [-r RFCT...] [-e EFCT...] [-d DFCT...] [-t TYPE] [-l LC] [-w] [-m] [FILE]
 
@@ -25,15 +26,16 @@ doc <- "Usage: convert [-h] [-x] [-o OUT] [-g GEO] [-a AGG] [-c CRS] [-s SLCT...
 -w --darwin              use Darwin Core style variable names [default: FALSE]
 -m --missing             include columns where all attributes are missing in attribute table [default: TRUE]
 -h --help                show this help text
--x --usage               show help and short example usage
-"
+-x --usage               show help and short example usage"
 
 opt <- docopt(doc)
 
 if (opt$usage) {
 
   cat(doc, "\n\n")
-  cat("where FILE is either the path to a Zip archive or tabular data file that has been downloaded from 'laji.fi', a URI linking to such a data file or an integer representing the URI (e.g., '49381').
+  cat("where FILE is either the path to a Zip archive or tabular data file that
+has been downloaded from 'laji.fi', a URI linking to such a data file or an
+integer representing the URI (e.g., '49381').
 
 Examples:
   convert 53254
@@ -43,7 +45,10 @@ Examples:
   convert -o output2.shp -g footprint HBF.49381.zip
   convert -o output3.shp -g footprint 53254
 
+Available Output File Formats:
+
 ")
+  cat(utils::capture.output(fgc::show_formats()), sep = "\n")
 
   q("no")
 
