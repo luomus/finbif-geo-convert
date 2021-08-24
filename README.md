@@ -26,12 +26,15 @@ oc new-app -f openshift-template.yml \
 
 ### Requirements
 
-* Docker
- 
+* git
+* docker
+
 ### Installation
 
 ```bash
+git clone https://github.com/luomus/finbif-geo-convert
 docker pull ghcr.io/luomus/finbif-geo-convert
+cp /finbif-geo-convert/fgc /usr/local/bin/
 ```
 
 ### Usage
@@ -39,7 +42,7 @@ docker pull ghcr.io/luomus/finbif-geo-convert
 To convert a local file:
 
 ```bash
-docker run --rm -u $(id -u) -v $PWD:/home/user ghcr.io/luomus/finbif-geo-convert convert -o test.shp -g footprint HBF.49381.zip
+fgc -o test.shp -g footprint HBF.49381.zip
 ```
 
 Note that the container must run with the same UID as the host system and the 
@@ -49,5 +52,5 @@ home directory.
 ### Documentation
 
 ```bash
-docker run --rm ghcr.io/luomus/finbif-geo-convert convert --help
+fgc --usage
 ```
