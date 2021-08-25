@@ -3,11 +3,13 @@
 #' Convert FinBIF data to geographic formats
 #'
 #' @return A named character vector of file formats.
+#'
 #' @export
 show_formats <- function() {
   fmts
 }
 
+#' @noRd
 fmts <- structure(
   c(
     csv = "Comma Separated Value",

@@ -16,14 +16,24 @@ Depends: R (>= 3.5.0)
 Imports:
     dplyr,
     finbif,
+    logger,
+    plumber,
+    tictoc,
     sf,
     stats,
     stringi,
     tidyselect,
     tools
-Suggests: 
+Suggests:
+    callr,
+    digest,
+    future,
+    httr,
+    later,
+    rapidoc,
     tinytest,
-    webfakes
+    tools,
+    withr
 License: GPL-2
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

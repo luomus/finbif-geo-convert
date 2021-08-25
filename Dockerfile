@@ -2,7 +2,7 @@
 
 FROM osgeo/gdal:ubuntu-small-latest
 
-ENV R_VERSION=4.1.0
+ENV R_VERSION=4.1.1
 ENV TERM=xterm
 ENV LC_ALL=en_US.UTF-8
 ENV LANG=en_US.UTF-8
@@ -28,6 +28,7 @@ RUN install2.r -s -e \
   callr \
   classInt \
   cpp11 \
+  covr \
   data.table \
   DBI \
   dplyr \
@@ -51,7 +52,6 @@ RUN install2.r -s -e \
   tictoc \
   tidyr \
   tinytest \
-  webfakes \
   withr \
   wk
 
@@ -68,11 +68,7 @@ RUN add-apt-repository ppa:ubuntugis/ubuntugis-unstable \
 
 RUN install2.r -s -e -r cran.r-project.org sf
 
-RUN installGithub.r luomus/finbif@0413f032
-
-COPY pkg fgc
-
-RUN R -e "remotes::install_local('fgc')"
+RUN installGithub.r luomus/finbif@dev
 
 HEALTHCHECK --interval=1m --timeout=10s \
   CMD curl -sfI -o /dev/null 0.0.0.0:8000/healthz || exit 1
@@ -86,12 +82,13 @@ COPY init.r /usr/local/bin/init
 COPY api.R /home/user/api.R
 COPY api.md /home/user/api.md
 COPY favicon.ico /home/user/favicon.ico
+COPY pkg /home/user/fgc
+WORKDIR /home/user
 
-RUN  mkdir -p /home/user/logs \
+RUN  R -e "remotes::install_local('fgc')" \
+  && mkdir -p /home/user/logs \
   && chgrp -R 0 /home/user /usr/local/lib/R/site-library/fgc/tinytest \
   && chmod -R g=u /home/user /usr/local/lib/R/site-library/fgc/tinytest /etc/passwd
-
-WORKDIR /home/user
 
 USER 1000
 

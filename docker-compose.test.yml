@@ -4,4 +4,4 @@ services:
   sut:
     build:
       context: .
-    command: R -e 'tinytest::test_package("fgc")'
+    command: R --slave -e 'print(cv <- covr::package_coverage("fgc"), "functions"); report(cv, file = "code-coverage.html", FALSE)'

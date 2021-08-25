@@ -6,6 +6,23 @@
 #* @apiTag convert Convert a FinBIF occurrence data file into a geographic data format
 #* @apiTag status Check status of API
 
+pkgs <- c(
+  "digest",
+  "fgc",
+  "later",
+  "promises",
+  "rapidoc",
+  "tools"
+)
+
+for (pkg in pkgs) {
+
+  suppressPackageStartupMessages(
+    library(pkg, quietly = TRUE, character.only = TRUE)
+  )
+
+}
+
 #* @filter cors
 cors <- function(req, res) {
 
