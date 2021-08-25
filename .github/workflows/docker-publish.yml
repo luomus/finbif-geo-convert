@@ -30,7 +30,7 @@ jobs:
         run: |
           if [ -f docker-compose.test.yml ]; then
             docker-compose --file docker-compose.test.yml build
-            docker-compose --file docker-compose.test.yml -u $(id -u) run sut
+            docker-compose --file docker-compose.test.yml run -u $(id -u) sut
             mkdir -p cov
           else
             docker build . --file Dockerfile
