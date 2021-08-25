@@ -85,10 +85,12 @@ COPY api.R /home/user/api.R
 COPY api.md /home/user/api.md
 COPY favicon.ico /home/user/favicon.ico
 COPY pkg /home/user/fgc
+
 WORKDIR /home/user
 
 RUN  R -e "remotes::install_local('fgc')" \
   && mkdir -p /home/user/logs \
+  && mkdir -p /home/user/coverage \
   && chgrp -R 0 /home/user /usr/local/lib/R/site-library/fgc/tinytest \
   && chmod -R g=u /home/user /usr/local/lib/R/site-library/fgc/tinytest /etc/passwd
 
