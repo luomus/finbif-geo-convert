@@ -32,6 +32,7 @@ RUN install2.r -s -e \
   data.table \
   DBI \
   dplyr \
+  DT \
   e1071 \
   fastmap \
   future \
