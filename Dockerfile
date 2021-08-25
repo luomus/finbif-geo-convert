@@ -35,6 +35,7 @@ RUN install2.r -s -e \
   e1071 \
   fastmap \
   future \
+  htmltools \
   httr \
   logger \
   later \
