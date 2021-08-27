@@ -264,6 +264,11 @@ finbif_geo_convert <- function(
 
     unique_geo_types <- unique(geo_types)
 
+    stopifnot(
+      "Geometry too complex for `.shp` file. Please select another format." =
+      !anyNA(match(unique_geo_types, shp_fmt_types))
+    )
+
     data_list <- list()
 
     for (i in unique_geo_types) {
@@ -368,3 +373,6 @@ shp_write <- function(data, output) {
   }
 
 }
+
+#' @noRd
+shp_fmt_types <- c("POINT", "POLYGON", "LINESTRING", "MULTIPOINT")
