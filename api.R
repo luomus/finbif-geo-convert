@@ -55,7 +55,9 @@ cors <- function(req, res) {
 #* @response 200 A json object
 #* @serializer unboxedJSON
 function() {
+
  ""
+
 }
 
 #* Get a list of output file formats
@@ -64,6 +66,7 @@ function() {
 #* @response 200 A json object
 #* @serializer unboxedJSON
 function() {
+
   fmts <- show_formats()
   list(formats = data.frame(name = names(fmts), description = unname(c(fmts))))
 
@@ -393,7 +396,7 @@ function(pr) {
       )
 
       spec$paths$`/{input}/{fmt}/{geo}/{crs}`$get$parameters[[1]]$example <-
-        1234
+        53254
 
       spec$paths$`/{input}/{fmt}/{geo}/{crs}`$get$parameters[[2]]$example <-
         "gpkg"
@@ -421,7 +424,7 @@ function(pr) {
       )
 
       spec$paths$`/{input}/{fmt}/{geo}/{crs}`$post$parameters[[1]]$example <-
-        53254
+        1234
 
       spec$paths$`/{input}/{fmt}/{geo}/{crs}`$post$parameters[[2]]$example <-
         "gpkg"

@@ -13,7 +13,11 @@ for (pkg in pkgs) {
 }
 
 api <- callr::r_bg(
-  fgc::run_api, args = list(log_dir = tempdir(), api = "~/api.R")
+  plumber::pr_run,
+  args = list(
+    pr = fgc::api(file = "~/api.R"), host = "0.0.0.0", port = 8000L, quiet = TRUE
+  ),
+  package = "plumber"
 )
 
 suppressMessages(withr::defer(api$kill(), sys.frame()))

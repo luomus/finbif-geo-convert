@@ -351,17 +351,15 @@ where <- tidyselect::vars_select_helpers[["where"]]
 #' @importFrom sf st_write
 shp_write <- function(data, output) {
 
-  if (identical(length(data), 1L)) {
+  if (!identical(length(data), 1L)) {
 
-    names(data) <- output
-
-  } else {
-
-    names(data) <- sprintf(
+    output <- sprintf(
       gsub("\\.shp$", "_%s.shp", output), tolower(names(data))
     )
 
   }
+
+  names(data) <- output
 
   for (i in names(data)) {
 

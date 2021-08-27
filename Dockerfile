@@ -88,7 +88,7 @@ COPY pkg /home/user/fgc
 
 WORKDIR /home/user
 
-RUN  R -e "remotes::install_local('fgc')" \
+RUN  R -e "remotes::install_local('fgc', NULL, FALSE, 'never')" \
   && mkdir -p /home/user/logs \
   && mkdir -p /home/user/coverage \
   && chgrp -R 0 /home/user /usr/local/lib/R/site-library/fgc/tinytest \

@@ -13,7 +13,7 @@ See online [documentation](https://fgc.rahtiapp.fi/__docs__/) for details.
 #### Docker compose
 
 ```bash
-docker-compose up -d
+docker-compose up --build -d
 ```
 
 #### Openshift
