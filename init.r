@@ -8,7 +8,6 @@
 
 pkgs <- c(
   "fgc",
-  "future",
   "logger",
   "plumber"
 )
@@ -20,8 +19,6 @@ for (pkg in pkgs) {
   )
 
 }
-
-future::plan("multicore")
 
 options(plumber.maxRequestSize = 1e8L)
 

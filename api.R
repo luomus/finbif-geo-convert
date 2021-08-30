@@ -8,6 +8,7 @@
 
 pkgs <- c(
   "digest",
+  "future",
   "fgc",
   "later",
   "promises",
@@ -22,6 +23,8 @@ for (pkg in pkgs) {
   )
 
 }
+
+future::plan("multicore")
 
 #* @filter cors
 cors <- function(req, res) {
