@@ -215,6 +215,21 @@ finbif_geo_convert <- function(
     )
   )
 
+  if (identical(fmt, "shp")) {
+
+    spatial_data <- switch(
+      geo_crs_avail,
+      footprint_wgs84 = dplyr::mutate(
+        spatial_data,
+        footprint_wgs84 = sf::st_as_sfc(
+          lapply(footprint_wgs84, uncollect), crs = sf::st_crs(4326)
+        )
+      ),
+      spatial_data
+    )
+
+  }
+
   if (!geo_crs_is_avail) {
 
     crs <- switch(
@@ -265,7 +280,7 @@ finbif_geo_convert <- function(
     unique_geo_types <- unique(geo_types)
 
     stopifnot(
-      "Geometry too complex for `.shp` file. Please select another format." =
+      "Geometry too complex for '.shp' file. Please select another format." =
       !anyNA(match(unique_geo_types, shp_fmt_types))
     )
 
@@ -375,4 +390,47 @@ shp_write <- function(data, output) {
 }
 
 #' @noRd
-shp_fmt_types <- c("POINT", "POLYGON", "LINESTRING", "MULTIPOINT")
+shp_fmt_types <- c(
+  "POINT", "POLYGON", "LINESTRING", "MULTIPOINT", "MULTILINESTRING",
+  "MULTIPOLYGON"
+)
+
+#' @noRd
+#' @importFrom sf st_geometry_type
+geometry_type_chr <- function(x) {
+
+  as.character(sf::st_geometry_type(x))
+
+}
+
+#' @noRd
+#' @importFrom sf st_multilinestring st_multipoint st_multipolygon
+uncollect <- function(x) {
+
+  gtype <- geometry_type_chr(x)
+
+  if (!identical(gtype, "GEOMETRYCOLLECTION")) {
+
+    return(x)
+
+  }
+
+  cgtypes <- vapply(x, geometry_type_chr, character(1L))
+
+  utype <- unique(sub("^MULTI", "", cgtypes))
+
+  if (length(utype) > 1L) {
+
+    return(x)
+
+  }
+
+  switch(
+    utype,
+    "POINT" = sf::st_multipoint(matrix(unlist(x), ncol = 2, byrow = TRUE)),
+    "LINESTRING" = sf::st_multilinestring(x),
+    "POLYGON" = sf::st_multipolygon(x),
+    x
+  )
+
+}
