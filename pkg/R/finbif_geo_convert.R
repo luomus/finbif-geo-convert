@@ -215,7 +215,9 @@ finbif_geo_convert <- function(
     )
   )
 
-  if (identical(fmt, "shp")) {
+  sf::st_geometry(spatial_data) <- geo_crs_avail
+
+  if ("GEOMETRYCOLLECTION" %in% sf::st_geometry_type(spatial_data)) {
 
     spatial_data <- switch(
       geo_crs_avail,
