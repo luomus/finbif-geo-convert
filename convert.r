@@ -10,7 +10,7 @@ library(docopt, quietly = TRUE)
 library(fgc, quietly = TRUE)
 library(utils, quietly = TRUE)
 
-doc <- "Usage: convert [-h] [-x] [-o OUT] [-g GEO] [-a AGG] [-c CRS] [-s SLCT...] [-n NROWS] [-r RFCT...] [-e EFCT...] [-d DFCT...] [-t TYPE] [-l LC] [-w] [-m] [FILE]
+doc <- "Usage: convert [-h] [-x] [-v] [-o OUT] [-g GEO] [-a AGG] [-c CRS] [-s SLCT...] [-n NROWS] [-r RFCT...] [-e EFCT...] [-d DFCT...] [-t TYPE] [-l LC] [-w] [-m] [FILE]
 
 -o --output OUT          output file path. File format determined from file extension [default: output.gpkg]
 -g --geometry GEO        geometry of output. One of 'point', 'bbox' or 'footprint' [default: point]
@@ -26,7 +26,8 @@ doc <- "Usage: convert [-h] [-x] [-o OUT] [-g GEO] [-a AGG] [-c CRS] [-s SLCT...
 -w --darwin              use Darwin Core style variable names [default: FALSE]
 -m --missing             include columns where all attributes are missing in attribute table [default: TRUE]
 -h --help                show this help text
--x --usage               show help and short example usage"
+-x --usage               show help and short example usage
+-v --version             show version"
 
 opt <- docopt(doc)
 
@@ -49,6 +50,14 @@ Available Output File Formats:
 
 ")
   cat(utils::capture.output(fgc::show_formats()), sep = "\n")
+
+  q("no")
+
+}
+
+if (opt$version) {
+
+  cat("fgc version ", format(packageVersion("fgc")), "\n")
 
   q("no")
 
