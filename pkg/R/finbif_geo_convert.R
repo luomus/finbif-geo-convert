@@ -92,9 +92,30 @@ finbif_geo_convert <- function(
 
   }
 
+  vars_with_data <- finbif::finbif_occurrence_load(
+    input, select = "all", n = 1L, drop_na = TRUE
+  )
+
+  vars_with_data <- names(vars_with_data)
+
+  geo_cols_req <- geo_components[[geo_crs_avail]]
+
+  has_geo_data <- geo_cols_req %in% vars_with_data
+
+  has_geo_data <- all(has_geo_data)
+
+  err_msg <- paste0(
+    "Geometric data for the requested geometry type is not avaiable for this ",
+    "dataset."
+  )
+
+  names(has_geo_data) <- err_msg
+
+  do.call(stopifnot, as.list(has_geo_data))
+
   spatial_data <- finbif::finbif_occurrence_load(
-    input, select = geo_components[[geo_crs_avail]], n = n, quiet = TRUE,
-    keep_tsv = TRUE, facts = facts
+    input, select = geo_cols_req, n = n, quiet = TRUE, keep_tsv = TRUE,
+    facts = facts
   )
 
   input <- switch(
