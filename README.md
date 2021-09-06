@@ -20,10 +20,7 @@ docker-compose up --build -d
 
 ```bash
 oc new-app -f openshift-template.yml \
-  -p APP_HOST=<app-host-url> \
-  -p DEV_APP_HOST=<app-host-url> \
-  -p LOG_HOST=<log-host-url> \
-  -p DEV_LOG_HOST=<log-host-url>
+  -p HOST=<host-url>
 ```
 
 ## CLI

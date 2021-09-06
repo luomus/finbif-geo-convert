@@ -4,15 +4,9 @@ parameters:
   - name: APP
     required: true
     value: finbif-geo-convert
-  - name: DEV_APP
-    required: true
-    value: dev-finbif-geo-convert
-  - name: APP_TILE
+  - name: APP_TITLE
     required: true
     value: "FinBIF Geo-convert"
-  - name: DEV_APP_TITLE
-    required: true
-    value: "FinBIF Geo-convert (dev)"
   - name: APP_PORT
     required: true
     value: "8000"
@@ -22,9 +16,6 @@ parameters:
   - name: LOG
     required: true
     value: log-monitor
-  - name: DEV_LOG
-    required: true
-    value: dev-log-monitor
   - name: LOG_PORT
     required: true
     value: "3838"
@@ -46,13 +37,7 @@ parameters:
   - name: REPS
     required: true
     value: "1"
-  - name: APP_HOST
-    required: true
-  - name: DEV_APP_HOST
-    required: true
-  - name: LOG_HOST
-    required: true
-  - name: DEV_LOG_HOST
+  - name: HOST
     required: true
   - name: GITHUB_SECRET
     required: true
@@ -87,14 +72,14 @@ objects:
 - kind: BuildConfig
   apiVersion: v1
   metadata:
-    name: ${DEV_APP}
+    name: dev-${APP}
     labels:
       app: ${APP}
   spec:
     output:
       to:
         kind: ImageStreamTag
-        name: ${DEV_APP}:latest
+        name: dev-${APP}:latest
     source:
       type: Git
       git:
@@ -142,7 +127,7 @@ objects:
 - kind: ImageStream
   apiVersion: v1
   metadata:
-    name: ${DEV_APP}
+    name: dev-${APP}
     labels:
       app: ${APP}
   spec:
@@ -196,7 +181,7 @@ objects:
             periodSeconds: 5
           env:
           - name: PAGE_TITLE
-            value: ${DEV_APP_TITLE}
+            value: ${APP_TITLE}
         volumes:
         - name: ${LOG}
           persistentVolumeClaim:
@@ -214,28 +199,28 @@ objects:
 - kind: DeploymentConfig
   apiVersion: v1
   metadata:
-    name: ${DEV_APP}
+    name: dev-${APP}
     labels:
       app: ${APP}
   spec:
     replicas: ${REPS}
     selector:
       app: ${APP}
-      deploymentconfig: ${DEV_APP}
+      deploymentconfig: dev-${APP}
     template:
       metadata:
         labels:
           app: ${APP}
-          deploymentconfig: ${DEV_APP}
+          deploymentconfig: dev-${APP}
       spec:
         containers:
-        - image: ${DEV_APP}:latest
-          name: ${DEV_APP}
+        - image: dev-${APP}:latest
+          name: dev-${APP}
           ports:
           - containerPort: ${APP_PORT}
           volumeMounts:
           - mountPath: ${LOG_DIR}
-            name: ${DEV_LOG}
+            name: dev-${LOG}
           livenessProbe:
             httpGet:
               path: ${STATUS}
@@ -250,21 +235,21 @@ objects:
             periodSeconds: 5
           env:
           - name: PAGE_TITLE
-            value: ${DEV_APP_TITLE}
+            value: ${APP_TITLE}-dev
         volumes:
-        - name: ${DEV_LOG}
+        - name: dev-${LOG}
           persistentVolumeClaim:
-            claimName: ${DEV_LOG}
+            claimName: dev-${LOG}
     triggers:
     - type: ConfigChange
     - type: ImageChange
       imageChangeParams:
         automatic: true
         containerNames:
-        - ${DEV_APP}
+        - dev-${APP}
         from:
           kind: ImageStreamTag
-          name: ${DEV_APP}:latest
+          name: dev-${APP}:latest
 - kind: DeploymentConfig
   apiVersion: v1
   metadata:
@@ -320,28 +305,28 @@ objects:
 - kind: DeploymentConfig
   apiVersion: v1
   metadata:
-    name: ${DEV_LOG}
+    name: dev-${LOG}
     labels:
       app: ${APP}
   spec:
     replicas: 1
     selector:
       app: ${APP}
-      deploymentconfig: ${DEV_LOG}
+      deploymentconfig: dev-${LOG}
     template:
       metadata:
         labels:
           app: ${APP}
-          deploymentconfig: ${DEV_LOG}
+          deploymentconfig: dev-${LOG}
       spec:
         containers:
         - image: ${LOG}:latest
-          name: ${DEV_LOG}
+          name: dev-${LOG}
           ports:
           - containerPort: ${LOG_PORT}
           volumeMounts:
           - mountPath: ${LOG_DIR}
-            name: ${DEV_LOG}
+            name: dev-${LOG}
           livenessProbe:
             httpGet:
               port: ${{LOG_PORT}}
@@ -354,18 +339,18 @@ objects:
             periodSeconds: 5
           env:
           - name: PAGE_TITLE
-            value: ${DEV_APP_TITLE}
+            value: ${APP_TITLE}-dev
         volumes:
-        - name: ${DEV_LOG}
+        - name: dev-${LOG}
           persistentVolumeClaim:
-            claimName: ${DEV_LOG}
+            claimName: dev-${LOG}
     triggers:
     - type: ConfigChange
     - type: ImageChange
       imageChangeParams:
         automatic: true
         containerNames:
-        - ${DEV_LOG}
+        - dev-${LOG}
         from:
           kind: ImageStreamTag
           name: ${LOG}:latest
@@ -383,7 +368,7 @@ objects:
 - kind: PersistentVolumeClaim
   apiVersion: v1
   metadata:
-    name: ${DEV_LOG}
+    name: dev-${LOG}
   spec:
     accessModes:
     - ReadWriteMany
@@ -409,7 +394,7 @@ objects:
 - kind: Service
   apiVersion: v1
   metadata:
-    name: ${DEV_APP}
+    name: dev-${APP}
     labels:
       app: ${APP}
   spec:
@@ -420,7 +405,7 @@ objects:
       targetPort: ${{APP_PORT}}
     selector:
       app: ${APP}
-      deploymentconfig: ${DEV_APP}
+      deploymentconfig: dev-${APP}
 - kind: Service
   apiVersion: v1
   metadata:
@@ -439,7 +424,7 @@ objects:
 - kind: Service
   apiVersion: v1
   metadata:
-    name: ${DEV_LOG}
+    name: dev-${LOG}
     labels:
       app: ${APP}
   spec:
@@ -450,7 +435,7 @@ objects:
       targetPort: ${{LOG_PORT}}
     selector:
       app: ${APP}
-      deploymentconfig: ${DEV_LOG}
+      deploymentconfig: dev-${LOG}
 - kind: Route
   apiVersion: v1
   metadata:
@@ -458,7 +443,7 @@ objects:
     labels:
       app: ${APP}
   spec:
-    host: ${APP_HOST}
+    host: ${HOST}
     port:
       targetPort: ${APP_PORT}-tcp
     tls:
@@ -471,18 +456,18 @@ objects:
 - kind: Route
   apiVersion: v1
   metadata:
-    name: ${DEV_APP}
+    name: dev-${APP}
     labels:
       app: ${APP}
   spec:
-    host: ${DEV_APP_HOST}
+    host: dev-${HOST}
     port:
       targetPort: ${APP_PORT}-tcp
     tls:
       termination: edge
     to:
       kind: Service
-      name: ${DEV_APP}
+      name: dev-${APP}
       weight: 100
     wildcardPolicy: None
 - kind: Route
@@ -492,7 +477,7 @@ objects:
     labels:
       app: ${APP}
   spec:
-    host: ${LOG_HOST}
+    host: log-${HOST}
     port:
       targetPort: ${LOG_PORT}-tcp
     tls:
@@ -505,17 +490,17 @@ objects:
 - kind: Route
   apiVersion: v1
   metadata:
-    name: ${DEV_LOG}
+    name: dev-${LOG}
     labels:
       app: ${APP}
   spec:
-    host: ${DEV_LOG_HOST}
+    host: dev-log-${HOST}
     port:
       targetPort: ${LOG_PORT}-tcp
     tls:
       termination: edge
     to:
       kind: Service
-      name: ${DEV_LOG}
+      name: dev-${LOG}
       weight: 100
     wildcardPolicy: None
