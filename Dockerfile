@@ -57,9 +57,6 @@ RUN install2.r -s -e \
   withr \
   wk
 
-RUN sed -i 's/RapiDoc/FinBIF Geo-convert/g' \
-      /usr/local/lib/R/site-library/rapidoc/dist/index.html
-
 RUN add-apt-repository ppa:ubuntugis/ubuntugis-unstable \
  && apt-get install -y --no-install-recommends \
       libgeos-dev \
@@ -91,8 +88,13 @@ WORKDIR /home/user
 RUN  R -e "remotes::install_local('fgc', NULL, FALSE, 'never')" \
   && mkdir -p /home/user/logs \
   && mkdir -p /home/user/coverage \
-  && chgrp -R 0 /home/user /usr/local/lib/R/site-library/fgc/tinytest \
-  && chmod -R g=u /home/user /usr/local/lib/R/site-library/fgc/tinytest /etc/passwd
+  && chgrp -R 0 /home/user \
+       /usr/local/lib/R/site-library/fgc/tinytest \
+       /usr/local/lib/R/site-library/rapidoc/dist \
+  && chmod -R g=u /home/user \
+       /usr/local/lib/R/site-library/fgc/tinytest \
+       /usr/local/lib/R/site-library/rapidoc/dist \
+       /etc/passwd
 
 USER 1000
 
