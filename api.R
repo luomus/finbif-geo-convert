@@ -416,7 +416,7 @@ function(pr) {
       )
 
       spec$paths$`/{input}/{fmt}/{geo}/{crs}`$get$parameters[[1]]$example <-
-        53254
+        switch(Sys.getenv("BRANCH"), dev = 6988, 53254)
 
       spec$paths$`/{input}/{fmt}/{geo}/{crs}`$get$parameters[[2]]$example <-
         "gpkg"
