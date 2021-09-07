@@ -177,7 +177,7 @@ function(
         Sys.setenv(FINBIF_RESTRICTED_FILE_ACCESS_TOKEN = personToken)
 
         op <- options(
-          finbif_dl_url = paste0(getOptions(finbif_dl_url), "/secured")
+          finbif_dl_url = paste0(getOption(finbif_dl_url), "/secured")
         )
 
         on.exit({
