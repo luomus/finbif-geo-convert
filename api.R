@@ -94,13 +94,15 @@ function() {
 #* @param file:file File to convert (maximum allowed size is ~100mb).
 #* @param filetype:str One of "citable" or "lite". Only needed if `select != all`
 #* @param locale:str One of "en", "fi", or "sv". Only needed if `select != all`
+#* @param personToken:str For use with restricted data downloads.
 #* @tag convert
 #* @response 303 A json object
 #* @serializer unboxedJSON
 function(
   input, fmt, geo, crs, agg = "none", select = "all", rfcts = "none",
   efcts = "none", dfcts = "none", dwc = "false", missing = "true", timeout = 30,
-  persist = 1, file = "", filetype = "citable", locale = "en", req, res
+  persist = 1, file = "", filetype = "citable", locale = "en", personToken = "",
+  req, res
 ) {
 
   persist <- as.integer(persist)
@@ -170,6 +172,21 @@ function(
 
       }
 
+      if (!identical(personToken, "")) {
+
+        Sys.setenv(FINBIF_RESTRICTED_FILE_ACCESS_TOKEN = personToken)
+
+        op <- options(
+          finbif_dl_url = paste0(getOptions(finbif_dl_url), "/secured")
+        )
+
+        on.exit({
+          options(op)
+          Sys.unsetenv("FINBIF_RESTRICTED_FILE_ACCESS_TOKEN")
+        })
+
+      }
+
       res <- try(
         fgc::finbif_geo_convert(
           input, output, geo, agg, crs, select = select, facts = facts,
@@ -195,7 +212,7 @@ function(
     },
     globals = c(
       "input", "output", "geo", "agg", "crs", "select", "facts", "dwc",
-      "missing", "id", "file", "filetype", "locale"
+      "missing", "id", "file", "filetype", "locale", "personToken"
     ),
     packages = "fgc"
   )
@@ -447,6 +464,15 @@ function(pr) {
         spec$paths$`/{input}/{fmt}/{geo}/{crs}`$get$parameters[[ind]] <- NULL
 
       }
+
+      for (i in c("personToken")) {
+
+        pars <- spec$paths$`/{input}/{fmt}/{geo}/{crs}`$post$parameters
+        ind <- which(vapply(pars, getElement, character(1L), "name") == i)
+        spec$paths$`/{input}/{fmt}/{geo}/{crs}`$post$parameters[[ind]] <- NULL
+
+      }
+
 
       spec$paths$`/{input}/{fmt}/{geo}/{crs}`$get$description <- paste0(
         "Convert a FinBIF citable data download file to a geographic data ",

@@ -236,6 +236,8 @@ objects:
           env:
           - name: PAGE_TITLE
             value: ${APP_TITLE}-dev
+          - name: BRANCH
+            value: ${DEV_BRANCH}
         volumes:
         - name: dev-${LOG}
           persistentVolumeClaim:

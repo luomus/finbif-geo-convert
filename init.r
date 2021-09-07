@@ -22,6 +22,13 @@ for (pkg in pkgs) {
 
 options(plumber.maxRequestSize = 1e8L)
 
+
+if (identical(Sys.getenv("BRANCH"), "dev")) {
+
+  options(finbif_dl_url = "https://staging.laji.fi/laji-etl/download")
+
+}
+
 log_file <- tempfile("plumber_", "logs", ".log")
 
 logger::log_appender(logger::appender_tee(log_file))
