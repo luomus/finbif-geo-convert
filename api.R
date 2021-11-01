@@ -89,6 +89,7 @@ function() {
 #* @param dfcts:str Document level facts. Multiple values comma separated.
 #* @param dwc:bool Use Darwin Core style column names? Ignored if `fmt == shp`.
 #* @param missing:bool Keep columns containing missing data only?
+#* @param missingfcts:bool Keep "fact" columns containing missing data only?
 #* @param timeout:dbl How long should the server be allowed to wait (in seconds) until responding (max allowed is 60)?
 #* @param persist:int How long (in hours) after the request is made should the output file still be available (max 24 hours)?
 #* @param file:file File to convert (maximum allowed size is ~100mb).
@@ -100,9 +101,9 @@ function() {
 #* @serializer unboxedJSON
 function(
   input, fmt, geo, crs, agg = "none", select = "all", rfcts = "none",
-  efcts = "none", dfcts = "none", dwc = "false", missing = "true", timeout = 30,
-  persist = 1, file = "", filetype = "citable", locale = "en", personToken = "",
-  req, res
+  efcts = "none", dfcts = "none", dwc = "false", missing = "true",
+  missingfcts = "false", timeout = 30, persist = 1, file = "",
+  filetype = "citable", locale = "en", personToken = "", req, res
 ) {
 
   persist <- as.integer(persist)
@@ -158,6 +159,9 @@ function(
   missing <- match.arg(missing, c("true", "false"))
   missing <- switch(missing, true = TRUE, false = FALSE)
 
+  missingfcts <- match.arg(missingfcts, c("true", "false"))
+  missingfcts <- switch(missingfcts, true = TRUE, false = FALSE)
+
   dwc <- match.arg(dwc, c("true", "false"))
   dwc <- switch(dwc, true = TRUE, false = FALSE)
 
@@ -191,6 +195,7 @@ function(
         fgc::finbif_geo_convert(
           input, output, geo, agg, crs, select = select, facts = facts,
           filetype = filetype, locale = locale, dwc = dwc, drop_na = !missing,
+          drop_na_facts = !missingfcts
         ),
         silent = TRUE
       )

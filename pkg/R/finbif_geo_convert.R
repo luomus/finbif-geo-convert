@@ -113,6 +113,16 @@ finbif_geo_convert <- function(
 
   do.call(stopifnot, as.list(has_geo_data))
 
+  combined_facts <- list()
+
+  for (i in names(default_facts)) {
+
+    combined_facts[[i]] <- c(default_facts[[i]], facts[[i]])
+
+  }
+
+  facts <- combined_facts
+
   spatial_data <- finbif::finbif_occurrence_load(
     input, select = geo_cols_req, n = n, quiet = TRUE, keep_tsv = TRUE,
     facts = facts
@@ -457,3 +467,16 @@ uncollect <- function(x) {
   )
 
 }
+
+#' @noRd
+default_facts <- list(
+  record = c(
+    "Havainnon laatu", "Havainnon määrän yksikkö",
+    "Museo, johon lajista kerätty näyte on talletettu"
+  ),
+  event = c("Vesistöalue", "Sijainnin tarkkuusluokka", "Pesintätulos"),
+  document = c(
+    "Aineistolähde", "Tietolähteen kuvaus", "Seurattava laji",
+    "Lajinseurantakohteen tila"
+  )
+)
