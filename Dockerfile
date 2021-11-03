@@ -67,7 +67,7 @@ RUN add-apt-repository ppa:ubuntugis/ubuntugis-unstable \
 
 RUN install2.r -s -e -r cran.r-project.org sf
 
-RUN installGithub.r luomus/finbif@8e19dd7e
+RUN installGithub.r luomus/finbif@07d2c584
 
 HEALTHCHECK --interval=1m --timeout=10s \
   CMD curl -sfI -o /dev/null 0.0.0.0:8000/healthz || exit 1
