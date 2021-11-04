@@ -402,6 +402,7 @@ where <- tidyselect::vars_select_helpers[["where"]]
 
 #' @noRd
 #' @importFrom sf st_write
+#' @importFrom stringi stri_trans_general
 shp_write <- function(data, output) {
 
   if (!identical(length(data), 1L)) {
@@ -415,6 +416,10 @@ shp_write <- function(data, output) {
   names(data) <- output
 
   for (i in names(data)) {
+
+    names(data[[i]]) <- stringi::stri_trans_general(
+      names(data[[i]]), "Latin-ASCII"
+    )
 
     st_write(data[[i]], i, layer_options = "ENCODING=UTF-8", quiet = TRUE)
 
