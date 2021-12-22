@@ -22,8 +22,8 @@ finbif_geo_convert(
 \item{input}{Character or Integer. Either the path to a Zip archive or
 tabular data file that has been downloaded from "laji.fi", a URI
 linking to such a data file (e.g.,
-\url{https://tun.fi/HBF.49381}) or an integer
-representing the URI (i.e., \code{49381}).}
+\url{https://tun.fi/HBF.53254}) or an integer
+representing the URI (i.e., \code{53254}).}
 
 \item{output}{Character. Output file format in the form of a file extension.
 See \code{show_formats()} for a list of available file formats. Use \code{"none"}

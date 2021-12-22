@@ -43,7 +43,7 @@ cp /finbif-geo-convert/fgc /usr/local/bin/
 To convert a local file:
 
 ```bash
-fgc -o test.shp -g footprint HBF.49381.zip
+fgc -o test.shp -g footprint HBF.53254.zip
 ```
 
 Note that the container must run with the same UID as the host system and the 

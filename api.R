@@ -195,7 +195,7 @@ function(
         fgc::finbif_geo_convert(
           input, output, geo, agg, crs, select = select, facts = facts,
           filetype = filetype, locale = locale, dwc = dwc, drop_na = !missing,
-          drop_na_facts = !missingfcts
+          drop_facts_na = !missingfcts, quiet = TRUE
         ),
         silent = TRUE
       )

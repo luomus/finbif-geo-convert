@@ -50,6 +50,14 @@ expect_inherits(sf::st_read("HBF.53254.gpkg"), "sf")
 
 expect_inherits(finbif_geo_convert("HBF.53254.zip", "none", "bbox"), "sf")
 
+expect_inherits(
+  finbif_geo_convert("HBF.53254.zip", "none", "bbox", crs = 4123), "sf"
+)
+
+expect_inherits(
+  finbif_geo_convert("HBF.53254.zip", "none", "point", crs = "kkj"), "sf"
+)
+
 unlink(
   c(
     "HBF.53254_point.cpg", "HBF.53254_point.dbf", "HBF.53254_point.prj",

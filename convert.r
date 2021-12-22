@@ -36,14 +36,14 @@ if (opt$usage) {
   cat(doc, "\n\n")
   cat("where FILE is either the path to a Zip archive or tabular data file that
 has been downloaded from 'laji.fi', a URI linking to such a data file or an
-integer representing the URI (e.g., '49381').
+integer representing the URI (e.g., '53254').
 
 Examples:
   convert 53254
-  convert -o HBF.49381.gpkg 49381
-  convert -o test.fgb HBF.49381.zip
-  convert -o output1.shp HBF.49381.zip
-  convert -o output2.shp -g footprint HBF.49381.zip
+  convert -o HBF.53254.gpkg 53254
+  convert -o test.fgb HBF.53254.zip
+  convert -o output1.shp HBF.53254.zip
+  convert -o output2.shp -g footprint HBF.53254.zip
   convert -o output3.shp -g footprint 53254
 
 Available Output File Formats:
