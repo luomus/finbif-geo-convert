@@ -55,6 +55,10 @@ expect_inherits(
 )
 
 expect_inherits(
+  finbif_geo_convert("HBF.53254.zip", "none", "bbox", crs = "euref"), "sf"
+)
+
+expect_inherits(
   finbif_geo_convert("HBF.53254.zip", "none", "point", crs = "kkj"), "sf"
 )
 

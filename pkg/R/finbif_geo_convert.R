@@ -41,8 +41,8 @@
 #'
 #' @importFrom dplyr across mutate rowwise transmute ungroup
 #' @importFrom finbif fb_occurrence_load from_schema
-#' @importFrom sf st_as_sf st_as_sfc st_bbox st_centroid st_crs st_geometry
-#' @importFrom sf st_geometry_type st_point st_transform
+#' @importFrom sf st_as_sf st_as_sfc st_bbox st_buffer st_centroid st_crs
+#' @importFrom sf st_geometry st_geometry_type st_point st_transform
 #' @importFrom stringi stri_extract_all_regex stri_replace_na
 #' @importFrom tools file_ext file_path_sans_ext
 #'
@@ -333,13 +333,11 @@ finbif_geo_convert <- function(
 
   }
 
+  footprint_crs <- paste0("footprint_", crs)
+
+  crs <- switch(as.character(crs), euref = 3067, kkj = 2393, wgs84 = 4326, crs)
+
   if (!geo_crs_is_avail) {
-
-    footprint_crs <- paste0("footprint_", crs)
-
-    crs <- switch(
-      as.character(crs), euref = 3067, kkj = 2393, wgs84 = 4326, crs
-    )
 
     if (identical(geo, "footprint") || !is.null(agg)) {
 
@@ -363,6 +361,7 @@ finbif_geo_convert <- function(
           )
         )
 
+        sf::st_crs(spatial_data[[geo_crs_avail]]) <- crs
 
       } else if (identical(geo, "point")) {
 
@@ -371,6 +370,50 @@ finbif_geo_convert <- function(
         )
 
       }
+
+    }
+
+  }
+
+  if (identical(geo, "bbox")) {
+
+    fgt <- sf::st_geometry_type(spatial_data[["footprint_wgs84"]])
+
+    if ("POINT" %in% fgt) {
+
+      fp <- fgt == "POINT"
+
+      if (identical(crs, 3067)) {
+
+        spatial_data[fp, geo_crs_avail] <- sf::st_buffer(
+          spatial_data[fp, geo_crs_avail, drop = FALSE], .5, 1L
+        )
+
+      } else {
+
+        spatial_data[fp, geo_crs_avail] <- sf::st_transform(
+          sf::st_buffer(
+            sf::st_transform(
+              spatial_data[fp, geo_crs_avail, drop = FALSE],
+              crs = sf::st_crs(3067)
+            ),
+            .5,
+            1L
+          ),
+          crs = sf::st_crs(crs)
+        )
+
+      }
+
+      spatial_data[[geo_crs_avail]] <- do.call(
+        c,
+        lapply(
+          spatial_data[[geo_crs_avail]],
+          function(x) sf::st_as_sfc(sf::st_bbox(x))
+        )
+      )
+
+      sf::st_crs(spatial_data[[geo_crs_avail]]) <- crs
 
     }
 
