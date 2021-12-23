@@ -6,26 +6,6 @@
 #* @apiTag convert Convert a FinBIF occurrence data file into a geographic data format
 #* @apiTag status Check status of API
 
-pkgs <- c(
-  "digest",
-  "future",
-  "fgc",
-  "later",
-  "promises",
-  "rapidoc",
-  "tools"
-)
-
-for (pkg in pkgs) {
-
-  suppressPackageStartupMessages(
-    library(pkg, quietly = TRUE, character.only = TRUE)
-  )
-
-}
-
-future::plan("multicore")
-
 #* @filter cors
 cors <- function(req, res) {
 
@@ -324,6 +304,7 @@ function(id, timeout = 30L, res) {
   )
 
 }
+
 #* Get the output file of conversion
 #* @get /output/<id:str>
 #* @param id:str The identifier of a conversion.
