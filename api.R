@@ -202,7 +202,11 @@ function(
 
       if (inherits(res, "try-error")) {
 
-         writeLines(res[[1L]], paste0(id, "/error.txt"))
+         err_file <- paste0(id, "/error.txt")
+
+         writeLines(res[[1L]], err_file)
+
+         file.copy(err_file, paste0("logs/errors/", err_file), recursive = TRUE)
 
       } else {
 

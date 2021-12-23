@@ -33,6 +33,8 @@ log_file <- tempfile("plumber_", "logs", ".log")
 
 logger::log_appender(logger::appender_tee(log_file))
 
+if (!dir.exists("logs/errors")) dir.create("logs/errors", recursive = TRUE)
+
 api <- fgc::api("api.R")
 
 plumber::pr_run(api, host = "0.0.0.0", port = 8000L, quiet = TRUE)
