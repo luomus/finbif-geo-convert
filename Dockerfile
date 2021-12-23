@@ -2,7 +2,7 @@
 
 FROM osgeo/gdal:ubuntu-small-latest
 
-ENV R_VERSION=4.1.1
+ENV R_VERSION=4.1.2
 ENV TERM=xterm
 ENV LC_ALL=en_US.UTF-8
 ENV LANG=en_US.UTF-8
@@ -67,7 +67,7 @@ RUN add-apt-repository ppa:ubuntugis/ubuntugis-unstable \
 
 RUN install2.r -s -e -r cran.r-project.org sf digest
 
-RUN installGithub.r -u FALSE luomus/finbif@45dfad57
+RUN installGithub.r -u FALSE luomus/finbif@7bfc27da
 
 HEALTHCHECK --interval=1m --timeout=10s \
   CMD curl -sfI -o /dev/null 0.0.0.0:8000/healthz || exit 1
