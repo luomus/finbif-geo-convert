@@ -5,8 +5,8 @@
 #' @param input Character or Integer. Either the path to a Zip archive or
 #'   tabular data file that has been downloaded from "laji.fi", a URI
 #'   linking to such a data file (e.g.,
-#'   [https://tun.fi/HBF.49381](https://tun.fi/HBF.49381)) or an integer
-#'   representing the URI (i.e., `49381`).
+#'   [https://tun.fi/HBF.53254](https://tun.fi/HBF.53254)) or an integer
+#'   representing the URI (i.e., `53254`).
 #' @param output Character. Output file format in the form of a file extension.
 #'   See `show_formats()` for a list of available file formats. Use `"none"`
 #'   (default) to prevent writing output to a file.
@@ -41,8 +41,8 @@
 #'
 #' @importFrom dplyr across mutate rowwise transmute ungroup
 #' @importFrom finbif fb_occurrence_load from_schema
-#' @importFrom sf st_as_sf st_as_sfc st_crs st_geometry st_geometry_type
-#' @importFrom sf st_point st_transform
+#' @importFrom sf st_as_sf st_as_sfc st_bbox st_buffer st_centroid st_crs
+#' @importFrom sf st_geometry st_geometry_type st_point st_transform
 #' @importFrom stringi stri_extract_all_regex stri_replace_na
 #' @importFrom tools file_ext file_path_sans_ext
 #'
@@ -79,8 +79,8 @@ finbif_geo_convert <- function(
 
     geo_crs_avail <- switch(
       geo,
-      bbox = "euref",
-      point = "euref",
+      bbox = "wgs84",
+      point = "wgs84",
       point_1km = "kkj",
       point_10km = "kkj",
       point_1km_center = "kkj",
@@ -93,16 +93,21 @@ finbif_geo_convert <- function(
   }
 
   vars_with_data <- finbif::finbif_occurrence_load(
-    input, select = "all", n = 1L, drop_na = TRUE
+    input, select = "all", n = 1L, drop_na = TRUE, keep_tsv = TRUE,
+    facts = facts, quiet = TRUE
   )
 
   vars_with_data <- names(vars_with_data)
 
   geo_cols_req <- geo_components[[geo_crs_avail]]
 
+  footprint_req <- crs != "wgs84" && is.null(agg)
+
   has_geo_data <- geo_cols_req %in% vars_with_data
 
-  has_geo_data <- all(has_geo_data)
+  has_geo_data <- all(
+    has_geo_data, "footprint_wgs84" %in% vars_with_data || !footprint_req
+  )
 
   err_msg <- paste0(
     "Geometric data for the requested geometry type is not avaiable for this ",
@@ -123,9 +128,10 @@ finbif_geo_convert <- function(
 
   facts <- combined_facts
 
+  geo_cols_req <- unique(c(geo_cols_req, "footprint_wgs84"))
+
   spatial_data <- finbif::finbif_occurrence_load(
-    input, select = geo_cols_req, n = n, quiet = TRUE, keep_tsv = TRUE,
-    facts = facts
+    input, select = geo_cols_req, n = n, quiet = TRUE
   )
 
   input <- switch(
@@ -191,60 +197,124 @@ finbif_geo_convert <- function(
       spatial_data,
       bbox_kkj = bb(lon_min_kkj, lat_min_kkj, lon_max_kkj, lat_max_kkj)
     ),
-    footprint_wgs84 = dplyr::mutate(
-      spatial_data,
-      footprint_wgs84 = stringi::stri_replace_na(footprint_wgs84, "POINT EMPTY")
-    )
+    spatial_data
+  )
+
+  spatial_data <- dplyr::mutate(
+    spatial_data,
+    footprint_wgs84 = stringi::stri_replace_na(footprint_wgs84, "POINT EMPTY")
   )
 
   spatial_data <- dplyr::ungroup(spatial_data)
 
   spatial_data <- switch(
     geo_crs_avail,
-    point_wgs84 = dplyr::transmute(
+    point_wgs84 = dplyr::mutate(
       spatial_data,
       point_wgs84 = sf::st_as_sfc(point_wgs84, crs = sf::st_crs(4326))
     ),
-    point_euref = dplyr::transmute(
+    point_euref = dplyr::mutate(
       spatial_data,
       point_euref = sf::st_as_sfc(point_euref, crs = sf::st_crs(3067))
     ),
-    point_1km_kkj = dplyr::transmute(
+    point_1km_kkj = dplyr::mutate(
       spatial_data,
       point_1km_kkj = sf::st_as_sfc(point_1km_kkj, crs = sf::st_crs(2393))
     ),
-    point_10km_kkj = dplyr::transmute(
+    point_10km_kkj = dplyr::mutate(
       spatial_data,
       point_10km_kkj = sf::st_as_sfc(point_10km_kkj, crs = sf::st_crs(2393))
     ),
-    point_1km_center_kkj = dplyr::transmute(
+    point_1km_center_kkj = dplyr::mutate(
       spatial_data,
       point_1km_center_kkj = sf::st_as_sfc(
         point_1km_center_kkj, crs = sf::st_crs(2393)
       )
     ),
-    point_10km_center_kkj = dplyr::transmute(
+    point_10km_center_kkj = dplyr::mutate(
       spatial_data,
       point_10km_center_kkj = sf::st_as_sfc(
         point_10km_center_kkj, crs = sf::st_crs(2393)
       )
     ),
-    bbox_wgs84 = dplyr::transmute(
+    bbox_wgs84 = dplyr::mutate(
       spatial_data,
       bbox_wgs84 = sf::st_as_sfc(bbox_wgs84, crs = sf::st_crs(4326))
     ),
-    bbox_euref = dplyr::transmute(
+    bbox_euref = dplyr::mutate(
       spatial_data,
       bbox_euref = sf::st_as_sfc(bbox_euref, crs = sf::st_crs(3067))
     ),
-    bbox_kkj = dplyr::transmute(
+    bbox_kkj = dplyr::mutate(
       spatial_data, bbox_kkj = sf::st_as_sfc(bbox_kkj, crs = sf::st_crs(2393))
     ),
-    footprint_wgs84 = dplyr::transmute(
-      spatial_data,
-      footprint_wgs84 = sf::st_as_sfc(footprint_wgs84, crs = sf::st_crs(4326))
-    )
+    spatial_data
   )
+
+  spatial_data <- dplyr::mutate(
+    spatial_data,
+    footprint_wgs84 = sf::st_as_sfc(footprint_wgs84, crs = sf::st_crs(4326))
+  )
+
+  spatial_data <- switch(
+    geo_crs_avail,
+    point_euref = dplyr::mutate(
+      spatial_data,
+      footprint_euref = sf::st_transform(
+        footprint_wgs84, crs = sf::st_crs(3067)
+      )
+    ),
+    bbox_euref = dplyr::mutate(
+      spatial_data,
+      footprint_euref = sf::st_transform(
+        footprint_wgs84, crs = sf::st_crs(3067)
+      )
+    ),
+    bbox_kkj = dplyr::mutate(
+      spatial_data,
+      footprint_kkj = sf::st_transform(footprint_wgs84, crs = sf::st_crs(2393))
+    ),
+    spatial_data
+  )
+
+  spatial_data <- dplyr::rowwise(spatial_data)
+
+  spatial_data <- switch(
+    geo_crs_avail,
+    point_euref = dplyr::mutate(
+      spatial_data,
+      point_euref_ = sf::st_centroid(footprint_euref),
+      point_euref__ = list(
+        ifelse(is.na(point_euref_), point_euref, point_euref_)
+      ),
+      point_euref = sf::st_as_sfc(point_euref__, crs = sf::st_crs(3067))
+    ),
+    bbox_euref = dplyr::mutate(
+      spatial_data,
+      bbox_euref_ = list(sf::st_bbox(footprint_euref)),
+      bbox_euref__ = sf::st_as_sfc(bbox_euref_),
+      bbox_euref___ = list(
+        ifelse(is.na(bbox_euref__), bbox_euref, bbox_euref__)
+      ),
+      bbox_euref = sf::st_as_sfc(bbox_euref___, crs = sf::st_crs(3067))
+    ),
+    bbox_kkj = dplyr::mutate(
+      spatial_data,
+      bbox_kkj_ = list(sf::st_bbox(footprint_kkj)),
+      bbox_kkj__ = sf::st_as_sfc(bbox_kkj_),
+      bbox_kkj___ = list(ifelse(is.na(bbox_kkj__), bbox_kkj, bbox_kkj__)),
+      bbox_kkj = sf::st_as_sfc(bbox_kkj___, crs = sf::st_crs(2393))
+    ),
+    spatial_data
+  )
+
+  spatial_data <- dplyr::ungroup(spatial_data)
+
+  keep_cols <- intersect(
+    c(geo_crs_avail, "footprint_wgs84"), names(spatial_data)
+  )
+
+  spatial_data <- spatial_data[, keep_cols]
 
   sf::st_geometry(spatial_data) <- geo_crs_avail
 
@@ -263,26 +333,102 @@ finbif_geo_convert <- function(
 
   }
 
+  footprint_crs <- paste0("footprint_", crs)
+
+  crs <- switch(as.character(crs), euref = 3067, kkj = 2393, wgs84 = 4326, crs)
+
   if (!geo_crs_is_avail) {
 
-    crs <- switch(
-      as.character(crs), euref = 3067, kkj = 2393, wgs84 = 4326, crs
-    )
+    if (identical(geo, "footprint") || !is.null(agg)) {
 
-    spatial_data[[geo_crs_avail]] <- sf::st_transform(
-      spatial_data[[geo_crs_avail]], sf::st_crs(crs)
-    )
+      spatial_data[[geo_crs_avail]] <- sf::st_transform(
+        spatial_data[[geo_crs_avail]], sf::st_crs(crs)
+      )
 
-    names(spatial_data) <- geo_crs
+    } else {
+
+      spatial_data[[footprint_crs]] <- sf::st_transform(
+        spatial_data[["footprint_wgs84"]], sf::st_crs(crs)
+      )
+
+      if (identical(geo, "bbox")) {
+
+        spatial_data[[geo_crs_avail]] <- do.call(
+          c,
+          lapply(
+            spatial_data[[footprint_crs]],
+            function(x) sf::st_as_sfc(sf::st_bbox(x))
+          )
+        )
+
+        sf::st_crs(spatial_data[[geo_crs_avail]]) <- crs
+
+      } else if (identical(geo, "point")) {
+
+        spatial_data[[geo_crs_avail]] <- sf::st_centroid(
+          spatial_data[[footprint_crs]]
+        )
+
+      }
+
+    }
 
   }
+
+  if (identical(geo, "bbox")) {
+
+    fgt <- sf::st_geometry_type(spatial_data[["footprint_wgs84"]])
+
+    if ("POINT" %in% fgt) {
+
+      fp <- fgt == "POINT"
+
+      if (identical(crs, 3067)) {
+
+        spatial_data[fp, geo_crs_avail] <- sf::st_buffer(
+          spatial_data[fp, geo_crs_avail, drop = FALSE], .5, 1L
+        )
+
+      } else {
+
+        spatial_data[fp, geo_crs_avail] <- sf::st_transform(
+          sf::st_buffer(
+            sf::st_transform(
+              spatial_data[fp, geo_crs_avail, drop = FALSE],
+              crs = sf::st_crs(3067)
+            ),
+            .5,
+            1L
+          ),
+          crs = sf::st_crs(crs)
+        )
+
+      }
+
+      spatial_data[[geo_crs_avail]] <- do.call(
+        c,
+        lapply(
+          spatial_data[[geo_crs_avail]],
+          function(x) sf::st_as_sfc(sf::st_bbox(x))
+        )
+      )
+
+      sf::st_crs(spatial_data[[geo_crs_avail]]) <- crs
+
+    }
+
+  }
+
+  spatial_data <- spatial_data[, geo_crs_avail]
+
+  names(spatial_data) <- geo_crs
 
   sf::st_geometry(spatial_data) <- geo_crs
 
   data <- finbif::finbif_occurrence_load(
     input,
     select = c(switch(fmt, shp = "short", "all"), paste0("-", geo_col_names)),
-    n = n, quiet = TRUE, facts = facts, ...
+    n = n, facts = facts, ...
   )
 
   col_type <- "native"

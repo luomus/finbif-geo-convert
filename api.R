@@ -6,26 +6,6 @@
 #* @apiTag convert Convert a FinBIF occurrence data file into a geographic data format
 #* @apiTag status Check status of API
 
-pkgs <- c(
-  "digest",
-  "future",
-  "fgc",
-  "later",
-  "promises",
-  "rapidoc",
-  "tools"
-)
-
-for (pkg in pkgs) {
-
-  suppressPackageStartupMessages(
-    library(pkg, quietly = TRUE, character.only = TRUE)
-  )
-
-}
-
-future::plan("multicore")
-
 #* @filter cors
 cors <- function(req, res) {
 
@@ -195,14 +175,18 @@ function(
         fgc::finbif_geo_convert(
           input, output, geo, agg, crs, select = select, facts = facts,
           filetype = filetype, locale = locale, dwc = dwc, drop_na = !missing,
-          drop_na_facts = !missingfcts
+          drop_facts_na = !missingfcts, quiet = TRUE
         ),
         silent = TRUE
       )
 
       if (inherits(res, "try-error")) {
 
-         writeLines(res[[1L]], paste0(id, "/error.txt"))
+         err_file <- paste0(id, "/error.txt")
+
+         writeLines(res[[1L]], err_file)
+
+         file.copy(err_file, paste0("logs/errors/", err_file), recursive = TRUE)
 
       } else {
 
@@ -320,6 +304,7 @@ function(id, timeout = 30L, res) {
   )
 
 }
+
 #* Get the output file of conversion
 #* @get /output/<id:str>
 #* @param id:str The identifier of a conversion.

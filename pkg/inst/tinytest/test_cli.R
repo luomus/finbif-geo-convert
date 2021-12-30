@@ -9,15 +9,15 @@ expect_identical(
 )
 
 system(
-  "convert -o HBF.49381.shp HBF.49381.zip", ignore.stdout = TRUE,
+  "convert -o HBF.53254.shp HBF.53254.zip", ignore.stdout = TRUE,
   ignore.stderr = TRUE
 )
 
-expect_inherits(sf::st_read("HBF.49381.shp", quiet = TRUE), "sf")
+expect_inherits(sf::st_read("HBF.53254.shp", quiet = TRUE), "sf")
 
 unlink(
   c(
-    "HBF.49381.cpg", "HBF.49381.dbf", "HBF.49381.prj", "HBF.49381.shp",
-    "HBF.49381.shx"
+    "HBF.53254.cpg", "HBF.53254.dbf", "HBF.53254.prj", "HBF.53254.shp",
+    "HBF.53254.shx"
   )
 )

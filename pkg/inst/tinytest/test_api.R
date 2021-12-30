@@ -14,9 +14,7 @@ for (pkg in pkgs) {
 
 api <- callr::r_bg(
   plumber::pr_run,
-  args = list(
-    pr = fgc::api(file = "~/api.R"), host = "0.0.0.0", port = 8000L, quiet = TRUE
-  ),
+  args = list(pr = fgc::api(file = "~/api.R"), host = "0.0.0.0", port = 8000L),
   package = "plumber"
 )
 

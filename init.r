@@ -7,9 +7,15 @@
 # Released under GPL (>= 2)
 
 pkgs <- c(
+  "digest",
+  "future",
   "fgc",
+  "later",
   "logger",
-  "plumber"
+  "plumber",
+  "promises",
+  "rapidoc",
+  "tools"
 )
 
 for (pkg in pkgs) {
@@ -20,8 +26,9 @@ for (pkg in pkgs) {
 
 }
 
-options(plumber.maxRequestSize = 1e8L)
+future::plan("multicore")
 
+options(plumber.maxRequestSize = 1e8L)
 
 if (identical(Sys.getenv("BRANCH"), "dev")) {
 
@@ -33,6 +40,8 @@ log_file <- tempfile("plumber_", "logs", ".log")
 
 logger::log_appender(logger::appender_tee(log_file))
 
+if (!dir.exists("logs/errors")) dir.create("logs/errors", recursive = TRUE)
+
 api <- fgc::api("api.R")
 
-plumber::pr_run(api, host = "0.0.0.0", port = 8000L, quiet = TRUE)
+plumber::pr_run(api, host = "0.0.0.0", port = 8000L)
