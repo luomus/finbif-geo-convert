@@ -1,6 +1,5 @@
 ## Modified from https://github.com/rocker-org/rocker-versioned2/blob/caff65d9b31327e0662633860c54ae2cc28bc60f/dockerfiles/Dockerfile_r-ver_4.1.0
-
-FROM osgeo/gdal:ubuntu-small-latest
+FROM ubuntu:20.04
 
 ENV R_VERSION=4.1.2
 ENV TERM=xterm
@@ -17,57 +16,60 @@ RUN /install_R.sh
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
       curl \
+      pkg-config \
+      file \
+      libsodium-dev \
       libssl-dev \
-      libudunits2-dev \
       software-properties-common \
  && apt-get autoremove -y \
  && apt-get autoclean -y \
  && rm -rf /var/lib/apt/lists/*
 
-RUN install2.r -s -e \
-  callr \
-  classInt \
-  cpp11 \
-  covr \
-  data.table \
-  DBI \
-  dplyr \
-  DT \
-  e1071 \
-  fastmap \
-  future \
-  htmltools \
-  httr \
-  logger \
-  later \
-  lutz \
-  plumber \
-  promises \
-  proxy \
-  rapidoc \
-  remotes \
-  readODS \
-  readxl \
-  s2 \
-  stringi \
-  units \
-  tictoc \
-  tidyr \
-  tinytest \
-  withr \
-  wk
-
 RUN add-apt-repository ppa:ubuntugis/ubuntugis-unstable \
+ && apt-get update \
  && apt-get install -y --no-install-recommends \
+      libudunits2-dev \
       libgeos-dev \
       libproj-dev \
+      libgdal-dev \
  && apt-get autoremove -y \
  && apt-get autoclean -y \
  && rm -rf /var/lib/apt/lists/*
 
-RUN install2.r -s -e -r cran.r-project.org sf digest
+RUN install2.r -e \
+      callr \
+      classInt \
+      cpp11 \
+      covr \
+      data.table \
+      DBI \
+      dplyr \
+      DT \
+      e1071 \
+      fastmap \
+      future \
+      htmltools \
+      httr \
+      logger \
+      later \
+      lutz \
+      plumber \
+      promises \
+      proxy \
+      rapidoc \
+      remotes \
+      readODS \
+      readxl \
+      s2 \
+      stringi \
+      units \
+      tictoc \
+      tidyr \
+      tinytest \
+      withr \
+      wk
 
-RUN installGithub.r -u FALSE luomus/finbif@7bfc27da
+RUN installGithub.r r-spatial/sf luomus/finbif@7bfc27da
 
 HEALTHCHECK --interval=1m --timeout=10s \
   CMD curl -sfI -o /dev/null 0.0.0.0:8000/healthz || exit 1
