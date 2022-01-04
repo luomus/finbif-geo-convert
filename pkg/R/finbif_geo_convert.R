@@ -409,7 +409,19 @@ finbif_geo_convert <- function(
         c,
         lapply(
           spatial_data[[geo_crs_avail]],
-          function(x) sf::st_as_sfc(sf::st_bbox(x))
+          function(x) {
+
+            ans <- "POLYGON EMPTY"
+
+            if (length(x) > 0L) {
+
+              ans <- sf::st_bbox(x)
+
+            }
+
+            sf::st_as_sfc(ans)
+
+          }
         )
       )
 
