@@ -186,7 +186,7 @@ function(
 
          writeLines(res[[1L]], err_file)
 
-         file.copy(err_file, "logs/errors", recursive = TRUE)
+         file.copy(err_file, sprintf("logs/errors/%s.txt", id))
 
       } else {
 
