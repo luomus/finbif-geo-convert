@@ -93,7 +93,7 @@ finbif_geo_convert <- function(
   }
 
   vars_with_data <- finbif::finbif_occurrence_load(
-    input, select = "all", n = 1L, drop_na = TRUE, keep_tsv = TRUE,
+    input, select = "all", n = n, drop_na = TRUE, keep_tsv = TRUE,
     facts = facts, quiet = TRUE
   )
 
