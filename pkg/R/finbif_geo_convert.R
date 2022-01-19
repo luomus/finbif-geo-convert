@@ -109,6 +109,16 @@ finbif_geo_convert <- function(
     has_geo_data, "footprint_wgs84" %in% vars_with_data || !footprint_req
   )
 
+  if (!has_geo_data && "footprint_wgs84" %in% vars_with_data) {
+
+    has_geo_data <- TRUE
+
+    geo_crs_is_avail <- FALSE
+
+    geo_crs_avail <- "footprint_wgs84"
+
+  }
+
   err_msg <- paste0(
     "Geometric data for the requested geometry type is not avaiable for this ",
     "dataset."

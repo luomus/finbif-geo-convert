@@ -30,6 +30,8 @@ expect_null(
   )
 )
 
+expect_inherits(finbif_geo_convert("laji-data.tsv"), "sf")
+
 suppressWarnings(
   finbif_geo_convert(
     "HBF.53254.zip", "HBF.53254.shp", "footprint", crs = "euref"
