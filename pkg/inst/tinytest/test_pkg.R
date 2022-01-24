@@ -14,7 +14,7 @@ logger::log_appender(logger::appender_tee(log_file))
 
 expect_inherits(api(file = "~/api.R"), "Plumber")
 
-expect_true(is.na(fgc:::bb(NA, NA, NA, NA)))
+expect_equal(fgc:::bb(NA, NA, NA, NA), list(sf::st_polygon()))
 
 expect_inherits(fgc:::pre(), "numeric")
 
@@ -29,6 +29,8 @@ expect_null(
     list(status = 400)
   )
 )
+
+expect_inherits(finbif_geo_convert("laji-data.tsv"), "sf")
 
 suppressWarnings(
   finbif_geo_convert(

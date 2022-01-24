@@ -93,7 +93,7 @@ finbif_geo_convert <- function(
   }
 
   vars_with_data <- finbif::finbif_occurrence_load(
-    input, select = "all", n = 1L, drop_na = TRUE, keep_tsv = TRUE,
+    input, select = "all", n = n, drop_na = TRUE, keep_tsv = TRUE,
     facts = facts, quiet = TRUE
   )
 
@@ -108,6 +108,16 @@ finbif_geo_convert <- function(
   has_geo_data <- all(
     has_geo_data, "footprint_wgs84" %in% vars_with_data || !footprint_req
   )
+
+  if (!has_geo_data && "footprint_wgs84" %in% vars_with_data) {
+
+    has_geo_data <- TRUE
+
+    geo_crs_is_avail <- FALSE
+
+    geo_crs_avail <- "footprint_wgs84"
+
+  }
 
   err_msg <- paste0(
     "Geometric data for the requested geometry type is not avaiable for this ",
@@ -292,7 +302,7 @@ finbif_geo_convert <- function(
     bbox_euref = dplyr::mutate(
       spatial_data,
       bbox_euref_ = list(sf::st_bbox(footprint_euref)),
-      bbox_euref__ = sf::st_as_sfc(bbox_euref_),
+      bbox_euref__ = list(bbox2poly(bbox_euref_)),
       bbox_euref___ = list(
         ifelse(is.na(bbox_euref__), bbox_euref, bbox_euref__)
       ),
@@ -301,7 +311,7 @@ finbif_geo_convert <- function(
     bbox_kkj = dplyr::mutate(
       spatial_data,
       bbox_kkj_ = list(sf::st_bbox(footprint_kkj)),
-      bbox_kkj__ = sf::st_as_sfc(bbox_kkj_),
+      bbox_kkj__ = list(bbox2poly(bbox_kkj_)),
       bbox_kkj___ = list(ifelse(is.na(bbox_kkj__), bbox_kkj, bbox_kkj__)),
       bbox_kkj = sf::st_as_sfc(bbox_kkj___, crs = sf::st_crs(2393))
     ),
@@ -549,7 +559,7 @@ geo_components <- list(
 #' @importFrom sf st_polygon
 bb <- function(x0, y0, x1, y1) {
   ans <- c(x0, x0, x1, x1, x0, y0, y1, y1, y0, y0)
-  if (anyNA(ans)) return(NA)
+  if (anyNA(ans)) return(list(sf::st_polygon()))
   ans <- matrix(ans, 5L)
   list(sf::st_polygon(list(ans)))
 }
@@ -643,3 +653,20 @@ default_facts <- list(
     "Lajinseurantakohteen tila"
   )
 )
+
+#' @noRd
+bbox2poly <- function(x) {
+
+  cond <- anyNA(as.vector(x))
+
+  ans <- sf::st_as_sfc(list(sf::st_polygon()))
+
+  if (!cond) {
+
+    ans <- sf::st_as_sfc(x)
+
+  }
+
+  ans
+
+}
