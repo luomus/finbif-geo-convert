@@ -90,7 +90,9 @@ function(
   persist <- pmax(persist, 1L)
   persist <- pmin(persist, 24L)
 
-  id <- digest::digest(list(req, sample(1e9L, 1L)))
+  id <- digest::digest(list(req, sample(1e9L, 1L)), "xxhash32")
+
+  id <- paste(input, id, sep = "-")
 
   dir.create(id)
 
