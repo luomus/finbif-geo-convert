@@ -343,6 +343,14 @@ function() {
 
 }
 
+#* @get /robots.txt
+#* @serializer contentType list(type="text/plain")
+function() {
+
+  readBin("robots.txt", "raw", n = file.info("robots.txt")$size)
+
+}
+
 #* @plumber
 function(pr) {
 
@@ -542,6 +550,7 @@ function(pr) {
 
       spec$paths$`/healthz` <- NULL
       spec$paths$`/favicon.ico` <- NULL
+      spec$paths$`/robots.txt` <- NULL
 
       spec
 

@@ -83,6 +83,7 @@ COPY init.r /usr/local/bin/init
 COPY api.R /home/user/api.R
 COPY api.md /home/user/api.md
 COPY favicon.ico /home/user/favicon.ico
+COPY robots.txt /home/user/robots.txt
 COPY pkg /home/user/fgc
 
 WORKDIR /home/user
