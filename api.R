@@ -90,7 +90,9 @@ function(
   persist <- pmax(persist, 1L)
   persist <- pmin(persist, 24L)
 
-  id <- digest::digest(list(req, sample(1e9L, 1L)))
+  id <- digest::digest(list(req, sample(1e9L, 1L)), "xxhash32")
+
+  id <- paste(input, id, sep = "-")
 
   dir.create(id)
 
@@ -341,6 +343,14 @@ function() {
 
 }
 
+#* @get /robots.txt
+#* @serializer contentType list(type="text/plain")
+function() {
+
+  readBin("robots.txt", "raw", n = file.info("robots.txt")$size)
+
+}
+
 #* @plumber
 function(pr) {
 
@@ -540,6 +550,7 @@ function(pr) {
 
       spec$paths$`/healthz` <- NULL
       spec$paths$`/favicon.ico` <- NULL
+      spec$paths$`/robots.txt` <- NULL
 
       spec
 
