@@ -2,7 +2,7 @@
 #
 # FinBIF geo-conversion CLI
 #
-# Copyright (C) 2021 LUOMUS - Finnish Museum of Natural History
+# Copyright (C) 2021-2022 LUOMUS - Finnish Museum of Natural History
 #
 # Released under GPL (>= 2)
 
@@ -35,16 +35,16 @@ if (opt$usage) {
 
   cat(doc, "\n\n")
   cat("where FILE is either the path to a Zip archive or tabular data file that
-has been downloaded from 'laji.fi', a URI linking to such a data file or an
-integer representing the URI (e.g., '53254').
+has been downloaded from 'laji.fi', a URI linking to such a data file or string
+representing the URI (e.g., 'HBF.53254').
 
 Examples:
-  convert 53254
+  convert HBF.53254
   convert -o HBF.53254.gpkg 53254
   convert -o test.fgb HBF.53254.zip
   convert -o output1.shp HBF.53254.zip
   convert -o output2.shp -g footprint HBF.53254.zip
-  convert -o output3.shp -g footprint 53254
+  convert -o output3.shp -g footprint HBF.53254
 
 Available Output File Formats:
 
