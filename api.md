@@ -49,31 +49,31 @@ for 1 to 24hrs after the initial request was made.
 Make a request to convert a citable file:
 
 ```bash
-$ curl https://fgc.rahtiapp.fi/53254/shp/point/wgs84
-"3705b6ab"
+$ curl https://fgc.rahtiapp.fi/HBF.53254/shp/point/wgs84
+"HBF.53254-20920cf1"
 ```
 
 Get the status of a request:
 
 ```bash
-$ curl http://fgc.rahtiapp.fi/status/3705b6ab
+$ curl http://fgc.rahtiapp.fi/status/HBF.53254-20920cf1
 "pending"
 ```
 
 Get the converted output file:
 
 ```bash
-$ curl -O http://fgc.rahtiapp.fi/output/3705b6ab
+$ curl -O http://fgc.rahtiapp.fi/output/HBF.53254-20920cf1
 ```
 
 Get the converted file via redirection:
 
 ```bash
-$ curl -JLO https://fgc.rahtiapp.fi/53254/shp/point/wgs84
+$ curl -JLO https://fgc.rahtiapp.fi/HBF.53254/shp/point/wgs84
 ```
 
 Upload a lite download and get a GeoJSON file back:
 
 ```bash
-$ curl -JLOF file=@laji-data.tsv https://fgc.rahtiapp.fi/1234/geojson/point/kkj
+$ curl -JLOF file=@laji-data.tsv https://fgc.rahtiapp.fi/test/geojson/point/kkj
 ```

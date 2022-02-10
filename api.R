@@ -56,9 +56,9 @@ function() {
 }
 
 #* Convert FinBIF data file with persistent identifier
-#* @get /<input:int>/<fmt:str>/<geo:str>/<crs:str>
-#* @post /<input:int>/<fmt:str>/<geo:str>/<crs:str>
-#* @param input:int The integer representation of the input file's identifier.
+#* @get /<input:str>/<fmt:str>/<geo:str>/<crs:str>
+#* @post /<input:str>/<fmt:str>/<geo:str>/<crs:str>
+#* @param input:str Input file's identifier.
 #* @param fmt:str The output file format (in the form of a file extension) for the geographic data.
 #* @param geo:str The geometry type of the output. One of 'point', 'bbox' or 'footprint'.
 #* @param crs:str The coordinate reference system for the output. One of "kkj", "euref", "wgs84" or any valid numeric EPSG code.
@@ -92,19 +92,20 @@ function(
 
   id <- digest::digest(list(req, sample(1e9L, 1L)), "xxhash32")
 
-  id <- paste(input, id, sep = "-")
+  input <- fgc::sanitise_id(input)
+
+  id <- paste(input[["name"]], id, sep = "-")
 
   dir.create(id)
 
   on.exit(later::later(~unlink(id, recursive = TRUE), 60L * 60L * persist))
 
-  input_id <- input
-
-  input <- switch(
-    req$REQUEST_METHOD,
-    GET = as.integer(input),
+  input_file <- switch(
+    req[["REQUEST_METHOD"]],
+    GET = input[["file"]],
     POST = tempfile(
-      tmpdir = id, fileext = paste0(".", tools::file_ext(names(file)))
+      tmpdir = id,
+      fileext = paste0(".", tools::file_ext(names(file)))
     )
   )
 
@@ -147,14 +148,14 @@ function(
   dwc <- match.arg(dwc, c("true", "false"))
   dwc <- switch(dwc, true = TRUE, false = FALSE)
 
-  output <- paste0(id, "/HBF.", input_id, ".geo.", fmt)
+  output <- paste0(id, "/", input[["name"]], ".geo.", fmt)
 
   promises::future_promise(
     {
 
-      if (is.character(input)) {
+      if (identical(req[["REQUEST_METHOD"]], "POST")) {
 
-        writeBin(file[[1L]], input)
+        writeBin(file[[1L]], input_file)
 
       }
 
@@ -175,7 +176,7 @@ function(
 
       res <- try(
         fgc::finbif_geo_convert(
-          input, output, geo, agg, crs, select = select, facts = facts,
+          input_file, output, geo, agg, crs, select = select, facts = facts,
           filetype = filetype, locale = locale, dwc = dwc, drop_na = !missing,
           drop_facts_na = !missingfcts, quiet = TRUE
         ),
@@ -194,7 +195,7 @@ function(
 
         zip(
           paste0(output, ".zip"),
-          setdiff(list.files(id, full.names = TRUE), input),
+          setdiff(list.files(id, full.names = TRUE), input_file),
           flags = "-rj9qX"
         )
 
@@ -249,7 +250,7 @@ function(id, timeout = 30L, res) {
 
       while (length(status) < 1L) {
 
-        status <- list.files(id, pattern = "^HBF.*\\.zip$")
+        status <- list.files(id, pattern = "\\.geo\\..*\\.zip$")
 
         timer <- timer + sleep
 
@@ -324,7 +325,7 @@ function(id, res) {
 
   }
 
-  zip <- list.files(id, pattern = "^HBF.*\\.zip$", full.names = TRUE)
+  zip <- list.files(id, pattern = "\\.geo\\..*\\.zip$", full.names = TRUE)
 
   out <- readBin(zip, "raw", n = file.info(zip)$size)
 
@@ -411,12 +412,12 @@ function(pr) {
       )
 
       spec$paths$`/{input}/{fmt}/{geo}/{crs}`$post$parameters[[1]]$description <- paste0(
-        "An integer identifier for the geographic data file. ",
+        "An identifier for the geographic data file. ",
         "Will be used in the filename of the download."
       )
 
       spec$paths$`/{input}/{fmt}/{geo}/{crs}`$get$parameters[[1]]$example <-
-        switch(Sys.getenv("BRANCH"), dev = 6988, 53254)
+        switch(Sys.getenv("BRANCH"), dev = "HBF.6988", "HBF.53254")
 
       spec$paths$`/{input}/{fmt}/{geo}/{crs}`$get$parameters[[2]]$example <-
         "gpkg"
@@ -438,13 +439,13 @@ function(pr) {
           id = list(
             type = "string",
             description = "Identifier of the file conversion.",
-            example = "17ecf252"
+            example = "file406c41a"
           )
         )
       )
 
       spec$paths$`/{input}/{fmt}/{geo}/{crs}`$post$parameters[[1]]$example <-
-        1234
+        "file406c41a"
 
       spec$paths$`/{input}/{fmt}/{geo}/{crs}`$post$parameters[[2]]$example <-
         "gpkg"
@@ -486,7 +487,10 @@ function(pr) {
           id = list(
             type = "string",
             description = "Identifier of the file conversion.",
-            example = "17ecf252"
+            example = switch(
+              Sys.getenv("BRANCH"), dev = "HBF.6988-20920cf1",
+              "HBF.53254-20920cf1"
+            )
           )
         )
       )
@@ -498,7 +502,9 @@ function(pr) {
       spec$paths$`/status/{id}`$get$description <-
         "Get the status of a conversion using an identifier."
 
-      spec$paths$`/status/{id}`$get$parameters[[1]]$example <- "17ecf252"
+      spec$paths$`/status/{id}`$get$parameters[[1]]$example <- switch(
+        Sys.getenv("BRANCH"), dev = "HBF.6988-20920cf1", "HBF.53254-20920cf1"
+      )
 
       spec$paths$`/status/{id}`$get$responses$`500`$content <- NULL
       spec$paths$`/status/{id}`$get$responses$`404`$content <- NULL
@@ -512,7 +518,10 @@ function(pr) {
           id = list(
             type = "string",
             description = "Identifier of the file conversion.",
-            example = "17ecf252"
+            example = switch(
+              Sys.getenv("BRANCH"), dev = "HBF.6988-20920cf1",
+              "HBF.53254-20920cf1"
+            )
           ),
           status = list(
             type = "string",
@@ -529,7 +538,10 @@ function(pr) {
           id = list(
             type = "string",
             description = "Identifier of the file conversion.",
-            example = "17ecf252"
+            example = switch(
+              Sys.getenv("BRANCH"), dev = "HBF.6988-20920cf1",
+              "HBF.53254-20920cf1"
+            )
           ),
           status = list(
             type = "string",
@@ -543,7 +555,9 @@ function(pr) {
       spec$paths$`/output/{id}`$get$description <-
         "Get the output file of a conversion using an identifier."
 
-      spec$paths$`/output/{id}`$get$parameters[[1]]$example <- "17ecf252"
+      spec$paths$`/output/{id}`$get$parameters[[1]]$example <- switch(
+        Sys.getenv("BRANCH"), dev = "HBF.6988-20920cf1", "HBF.53254-20920cf1"
+      )
 
       spec$paths$`/output/{id}`$get$responses$`500`$content <- NULL
       spec$paths$`/output/{id}`$get$responses$default <- NULL

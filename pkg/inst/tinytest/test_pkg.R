@@ -125,3 +125,14 @@ tri <- fgc:::uncollect(
 )
 
 expect_inherits(tri, "GEOMETRYCOLLECTION")
+
+expect_equal(
+  sanitise_id("645"),
+  list(file = 645, name = "HBF.645")
+)
+
+expect_equal(
+  sanitise_id("HBF.645"),
+  list(file = "https://tun.fi/HBF.645", name = "HBF.645")
+)
+
