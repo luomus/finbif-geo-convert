@@ -81,7 +81,7 @@ function() {
 #* @serializer unboxedJSON
 function(
   input, fmt, geo, crs, agg = "none", select = "all", rfcts = "none",
-  efcts = "none", dfcts = "none", dwc = "false", missing = "true",
+  efcts = "none", dfcts = "none", dwc = "false", missing = "false",
   missingfcts = "false", timeout = 30, persist = 1, file = "",
   filetype = "citable", locale = "en", personToken = "", req, res
 ) {
