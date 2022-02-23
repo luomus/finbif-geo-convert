@@ -516,7 +516,12 @@ finbif_geo_convert <- function(
     none = NULL,
     rds = saveRDS(data, output),
     shp = shp_write(data_list, output),
-    sf::st_write(data, output, quiet = TRUE)
+    sf::st_write(
+      data,
+      output,
+      layer = gsub("\\.", "_", basename(tools::file_path_sans_ext(output))),
+      quiet = TRUE
+    )
   )
 
   invisible(data)
