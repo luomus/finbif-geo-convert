@@ -653,10 +653,7 @@ default_facts <- list(
     "Museo, johon lajista kerätty näyte on talletettu"
   ),
   event = c("Vesistöalue", "Sijainnin tarkkuusluokka", "Pesintätulos"),
-  document = c(
-    "Aineistolähde", "Tietolähteen kuvaus", "Seurattava laji",
-    "Lajinseurantakohteen tila"
-  )
+  document = "Seurattava laji"
 )
 
 #' @noRd
