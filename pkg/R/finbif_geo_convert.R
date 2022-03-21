@@ -448,9 +448,8 @@ finbif_geo_convert <- function(
   sf::st_geometry(spatial_data) <- geo_crs
 
   data <- finbif::finbif_occurrence_load(
-    input,
-    select = c(switch(fmt, shp = "short", "all"), paste0("-", geo_col_names)),
-    n = n, facts = facts, ...
+    input, select = switch(fmt, shp = "short", "all"), n = n, facts = facts,
+    ...
   )
 
   col_type <- "native"
