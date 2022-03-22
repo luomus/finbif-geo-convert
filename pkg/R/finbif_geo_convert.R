@@ -447,7 +447,7 @@ finbif_geo_convert <- function(
 
   sf::st_geometry(spatial_data) <- geo_crs
 
-  deselect <- grep("n_1|t_1", geo_col_names, value = TRUE, invert = TRUE)
+  deselect <- grep("s_1", geo_col_names, value = TRUE, invert = TRUE)
 
   deselect <- paste0("-", deselect)
 
