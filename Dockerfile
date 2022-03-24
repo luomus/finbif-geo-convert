@@ -69,7 +69,7 @@ RUN install2.r -e \
       withr \
       wk
 
-RUN installGithub.r r-spatial/sf luomus/finbif@18647f33
+RUN installGithub.r r-spatial/sf luomus/finbif@7091ee91
 
 HEALTHCHECK --interval=1m --timeout=10s \
   CMD curl -sfI -o /dev/null 0.0.0.0:8000/healthz || exit 1
