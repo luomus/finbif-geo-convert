@@ -292,7 +292,11 @@ function(id, timeout = 30L, res) {
 
         error <- paste0(id, "/error.txt")
 
-        list(id = id, error = readChar(error, file.info(error)$size))
+        msg <- readChar(error, file.info(error)$size)
+
+        msg <- fgc::read_error_msg(msg)
+
+        c(id = id, msg)
 
       } else {
 

@@ -3,6 +3,7 @@
 S3method(print,fmts)
 export(api)
 export(finbif_geo_convert)
+export(read_error_msg)
 export(sanitise_id)
 export(show_formats)
 importFrom(dplyr,across)
