@@ -1,6 +1,6 @@
 Package: fgc
 Title: FinBIF geographic data conversion
-Version: 0.1.10.9003
+Version: 0.1.11.9000
 Authors@R: c(
     person(given = "Finnish Museum of Natural History - Luomus",
            role = "cph"),
