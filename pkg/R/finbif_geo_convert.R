@@ -55,7 +55,9 @@ finbif_geo_convert <- function(
 
   fmt <- switch(output, none = output, tools::file_ext(output))
 
-  stopifnot("Format not supported" = fmt %in% c("none", names(fmts)))
+  error_if(
+    !fmt %in% c("none", names(fmts)), "Format not supported", "not_supported"
+  )
 
   geo_col_names <- unlist(geo_components)
 
@@ -124,9 +126,7 @@ finbif_geo_convert <- function(
     "dataset."
   )
 
-  names(has_geo_data) <- err_msg
-
-  do.call(stopifnot, as.list(has_geo_data))
+  error_if(!has_geo_data, err_msg, "geometry_not_available")
 
   combined_facts <- list()
 
@@ -447,10 +447,14 @@ finbif_geo_convert <- function(
 
   sf::st_geometry(spatial_data) <- geo_crs
 
+  deselect <- grep("s_1", geo_col_names, value = TRUE, invert = TRUE)
+
+  deselect <- paste0("-", deselect)
+
   data <- finbif::finbif_occurrence_load(
     input,
-    select = c(switch(fmt, shp = "short", "all"), paste0("-", geo_col_names)),
-    n = n, facts = facts, ...
+    select = c(switch(fmt, shp = "short", "all"), deselect), n = n,
+    facts = facts,...
   )
 
   col_type <- "native"
@@ -480,9 +484,10 @@ finbif_geo_convert <- function(
 
     unique_geo_types <- unique(geo_types)
 
-    stopifnot(
-      "Geometry too complex for '.shp' file. Please select another format." =
-      !anyNA(match(unique_geo_types, shp_fmt_types))
+    error_if(
+      anyNA(match(unique_geo_types, shp_fmt_types)),
+      "Geometry too complex for '.shp' file. Please select another format.",
+      "too_complex"
     )
 
     data_list <- list()

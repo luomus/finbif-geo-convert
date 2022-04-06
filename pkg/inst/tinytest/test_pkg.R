@@ -1,4 +1,4 @@
-pkgs <- c("logger", "sf")
+pkgs <- c("logger", "rapidoc", "sf")
 
 for (pkg in pkgs) {
 
