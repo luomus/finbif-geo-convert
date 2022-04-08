@@ -31,8 +31,6 @@
 #'   vectors of the "facts" to be extracted and then joined to the return value.
 #' @param filetype Character. One of `"citable"` or `"lite"`. The type of input
 #'  file. Only required if `select != "all"`.
-#' @param locale Character. One of `"en"`. `"fi"` or `"sv"`. The locale of input
-#'  file. Only required if `select != "all"` and `filetype == "lite"`.
 #' @param ... Other options passed to `finbif::finbif_occurrence_load`.
 #'
 #' @return An `{sf}` package simple feature object (invisibly). And if
@@ -50,7 +48,7 @@
 finbif_geo_convert <- function(
   input, output = "none", geo = c("point", "bbox", "footprint"), agg = NULL,
   crs = "wgs84", select = "all", n = -1, facts = list(), filetype = "citable",
-  locale = "en", ...
+  ...
 ) {
 
   fmt <- switch(output, none = output, tools::file_ext(output))
@@ -472,7 +470,7 @@ finbif_geo_convert <- function(
     all = data,
     data[
       ,
-      finbif::from_schema(select, to = to, file = filetype, locale = locale)
+      finbif::from_schema(select, to = to, file = filetype)
     ]
   )
 

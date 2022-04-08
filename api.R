@@ -74,7 +74,6 @@ function() {
 #* @param persist:int How long (in hours) after the request is made should the output file still be available (max 24 hours)?
 #* @param file:file File to convert (maximum allowed size is ~100mb).
 #* @param filetype:str One of "citable" or "lite". Only needed if `select != all`
-#* @param locale:str One of "en", "fi", or "sv". Only needed if `select != all`
 #* @param personToken:str For use with restricted data downloads.
 #* @tag convert
 #* @response 303 A json object
@@ -83,7 +82,7 @@ function(
   input, fmt, geo, crs, agg = "none", select = "all", rfcts = "none",
   efcts = "none", dfcts = "none", dwc = "false", missing = "false",
   missingfcts = "false", timeout = 30, persist = 1, file = "",
-  filetype = "citable", locale = "en", personToken = "", req, res
+  filetype = "citable", personToken = "", req, res
 ) {
 
   persist <- as.integer(persist)
@@ -177,7 +176,7 @@ function(
       res <- try(
         fgc::finbif_geo_convert(
           input_file, output, geo, agg, crs, select = select, facts = facts,
-          filetype = filetype, locale = locale, dwc = dwc, drop_na = !missing,
+          filetype = filetype, dwc = dwc, drop_na = !missing,
           drop_facts_na = !missingfcts, quiet = TRUE
         ),
         silent = TRUE
@@ -204,7 +203,7 @@ function(
     },
     globals = c(
       "input", "output", "geo", "agg", "crs", "select", "facts", "dwc",
-      "missing", "id", "file", "filetype", "locale", "personToken"
+      "missing", "id", "file", "filetype", "personToken"
     ),
     packages = "fgc"
   )
@@ -462,7 +461,7 @@ function(pr) {
 
       spec$paths$`/{input}/{fmt}/{geo}/{crs}`$get$requestBody <- NULL
 
-      for (i in c("filetype", "locale")) {
+      for (i in c("filetype")) {
 
         pars <- spec$paths$`/{input}/{fmt}/{geo}/{crs}`$get$parameters
         ind <- which(vapply(pars, getElement, character(1L), "name") == i)
