@@ -8,13 +8,7 @@ finbif_geo_convert(
   input,
   output = "none",
   geo = c("point", "bbox", "footprint"),
-  agg = NULL,
   crs = "wgs84",
-  select = "all",
-  n = -1,
-  facts = list(),
-  filetype = "citable",
-  locale = "en",
   ...
 )
 }
@@ -32,33 +26,8 @@ See \code{show_formats()} for a list of available file formats. Use \code{"none"
 \item{geo}{Character. Geometry of output. One of \code{"point"}, \code{"bbox"} or "
 \code{"footprint"}.}
 
-\item{agg}{Character. Aggregate features to a grid in KKJ CRS. One of
-\code{"1km"}, \code{"10km"}, \code{"1km_center"} or \code{"10km_center"}. Using the suffix
-\code{"_center"} will aggregate based on the center point of the feature's
-bounding box. Without, the aggregation is based on the entire bounding
-box and those features with bounding boxes that encompass multiple grid
-vertices will return NA.}
-
 \item{crs}{Character or Integer. Coordinate reference system of output. One
 of \code{"euref"}, \code{"kkj"}, \code{"wgs84"} or integer indicating an EPSG code.}
-
-\item{select}{Character. Variables to include in the output attribute table.
-Default is keyword \code{"all"} indicating all (non spatial) variables from
-input data will be included in the output.}
-
-\item{n}{Integer. How many features to include. Negative and other invalid
-values are ignored causing all features to be included.}
-
-\item{facts}{List. A named list of "facts" to extract from supplementary
-"fact" files in an input data archive. Names can include one or more of
-\code{"record"}, \code{"event"} or \code{"document"}. Elements of the list are character
-vectors of the "facts" to be extracted and then joined to the return value.}
-
-\item{filetype}{Character. One of \code{"citable"} or \code{"lite"}. The type of input
-file. Only required if \code{select != "all"}.}
-
-\item{locale}{Character. One of \code{"en"}. \code{"fi"} or \code{"sv"}. The locale of input
-file. Only required if \code{select != "all"} and \code{filetype == "lite"}.}
 
 \item{...}{Other options passed to \code{finbif::finbif_occurrence_load}.}
 }

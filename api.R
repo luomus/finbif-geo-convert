@@ -175,8 +175,7 @@ function(
 
       res <- try(
         fgc::finbif_geo_convert(
-          input_file, output, geo, agg, crs, select = select, facts = facts,
-          filetype = filetype, dwc = dwc, drop_na = !missing,
+          input_file, output, geo, crs, dwc = dwc, drop_na = !missing,
           drop_facts_na = !missingfcts, quiet = TRUE
         ),
         silent = TRUE

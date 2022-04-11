@@ -76,6 +76,7 @@ HEALTHCHECK --interval=1m --timeout=10s \
 
 ENV HOME /home/user
 ENV OPENBLAS_NUM_THREADS 1
+ENV OMP_THREAD_LIMIT 1
 
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY convert.r /usr/local/bin/convert
