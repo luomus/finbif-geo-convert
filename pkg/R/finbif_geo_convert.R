@@ -175,7 +175,7 @@ get_points_from_points <- function(obj) {
   obj[["data"]] <- dplyr::rowwise(obj[["data"]])
 
   obj[["data"]] <- dplyr::mutate(
-    obj[["data"]], geo = list(sf::st_point(c(.data[[lat]], .data[[lon]])))
+    obj[["data"]], geo = list(sf::st_point(c(.data[[lon]], .data[[lat]])))
   )
 
   obj[["data"]][c(lat, lon)] <- NULL
