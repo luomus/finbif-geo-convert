@@ -163,6 +163,7 @@ points <- function(obj) {
 #' @importFrom dplyr mutate rowwise select ungroup
 #' @importFrom rlang .data
 #' @importFrom sf st_as_sfc st_geometry st_is_empty st_point
+#' @importFrom stringi stri_replace_na
 get_points_from_points <- function(obj) {
 
   lat <- obj[["input_nms_lat"]]
@@ -193,7 +194,9 @@ get_points_from_points <- function(obj) {
 
     if (any(!is.na(sub_points))) {
 
-      sub_points <- to_footprint(sub_points)
+      sub_points <- stringi::stri_replace_na(sub_points, "POINT EMPTY")
+
+      sub_points <- sf::st_as_sfc(sub_points, crs = 4326L)
 
       sub_points <- footprint_to_points(sub_points)
 
@@ -215,15 +218,15 @@ get_points_from_points <- function(obj) {
 #' @importFrom sf st_geometry
 get_points_from_footprint <- function(obj) {
 
+  obj <- to_footprint(obj)
+
   lat <- obj[["input_nms_lat"]]
 
   lon <- obj[["input_nms_lon"]]
 
   footprint <- obj[["input_nms_footprint"]]
 
-  obj[["data"]][["geo"]] <- to_footprint(obj[["data"]][[footprint]])
-
-  obj[["data"]][["geo"]] <- footprint_to_points(obj[["data"]][["geo"]])
+  obj[["data"]][["geo"]] <- footprint_to_points(obj[["data"]][[footprint]])
 
   obj[["data"]][c(lat, lon, footprint)] <- NULL
 
@@ -241,7 +244,7 @@ footprint <- function(obj) {
 
     footprint <- obj[["input_nms_footprint"]]
 
-    obj[["data"]][[footprint]] <- to_footprint(obj[["data"]][[footprint]])
+    obj <- to_footprint(obj)
 
     if (obj[["has_points"]]) {
 
@@ -345,30 +348,39 @@ buffer <- function(obj) {
 #' @noRd
 #' @importFrom sf st_as_sfc st_crs st_geometry_type
 #' @importFrom stringi stri_replace_na
-to_footprint <- function(x) {
+to_footprint <- function(obj) {
+
+  footprint <- obj[["input_nms_footprint"]]
 
   missing_geo_err_msg <- paste0(
     "Geometric data for the requested geometry type is not avaiable for this ",
     "dataset."
   )
 
-  error_if(is.null(x), missing_geo_err_msg, "geometry_not_available")
+  error_if(
+    is.null(obj[["data"]][[footprint]]), missing_geo_err_msg,
+    "geometry_not_available"
+  )
 
-  x <- stringi::stri_replace_na(x, "POLYGON EMPTY")
+  obj[["data"]][[footprint]] <- stringi::stri_replace_na(
+    obj[["data"]][[footprint]], "POLYGON EMPTY"
+  )
 
-  x <- sf::st_as_sfc(x)
+  obj[["data"]][[footprint]] <- sf::st_as_sfc(obj[["data"]][[footprint]])
 
-  if ("GEOMETRYCOLLECTION" %in% sf::st_geometry_type(x)) {
+  gc <- geometry_type_chr(obj[["data"]][[footprint]]) == "GEOMETRYCOLLECTION"
 
-    x <- lapply(x, uncollect)
+  if (identical(obj[["geo"]], "footprint") && any(gc)) {
 
-    x <- sf::st_as_sfc(x)
+    uncollected <- lapply(obj[["data"]][[footprint]][gc], uncollect)
+
+    obj[["data"]][[footprint]][gc] <- sf::st_as_sfc(uncollected)
 
   }
 
-  sf::st_crs(x) <- 4326L
+  sf::st_crs(obj[["data"]][[footprint]]) <- 4326L
 
-  x
+  obj
 
 }
 
