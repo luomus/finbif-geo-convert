@@ -44,11 +44,11 @@ finbif_geo_convert <- function(
 
   obj <- footprint(obj)
 
-  obj <- bbox(obj)
-
   obj <- project(obj)
 
   obj <- buffer(obj)
+
+  obj <- bbox(obj)
 
   write_file(obj)
 
@@ -282,16 +282,14 @@ bbox <- function(obj) {
 
   if (identical(obj[["geo"]], "bbox")) {
 
-    obj[["is_point"]] <- sf::st_geometry_type(obj[["data"]][["geo"]]) == "POINT"
-
-    bbox <- lapply(obj[["data"]][["geo"]][!obj[["is_point"]]], sf::st_bbox)
+    bbox <- lapply(obj[["data"]][["geo"]], sf::st_bbox)
 
     bbox <- lapply(
       bbox,
       function(x) if (is.na(x)) sf::st_polygon() else sf::st_as_sfc(x)[[1L]]
     )
 
-    obj[["data"]][["geo"]][!obj[["is_point"]]] <- sf::st_as_sfc(bbox)
+    obj[["data"]][["geo"]]<- sf::st_as_sfc(bbox)
 
   }
 
@@ -319,9 +317,11 @@ buffer <- function(obj) {
 
   if (identical(obj[["geo"]], "bbox")) {
 
-    transform <- !identical(obj[["crs"]], "euref")
+    transform <- identical(obj[["crs"]], "wgs84")
 
-    points <- obj[["data"]][["geo"]][obj[["is_point"]]]
+    is_point <- sf::st_geometry_type(obj[["data"]][["geo"]]) == "POINT"
+
+    points <- obj[["data"]][["geo"]][is_point]
 
     if (transform) {
 
@@ -337,7 +337,7 @@ buffer <- function(obj) {
 
     }
 
-    obj[["data"]][["geo"]][obj[["is_point"]]] <- points
+    obj[["data"]][["geo"]][is_point] <- points
 
   }
 
