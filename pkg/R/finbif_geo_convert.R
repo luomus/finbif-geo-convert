@@ -242,6 +242,10 @@ footprint <- function(obj) {
 
   if (!identical(obj[["geo"]], "point")) {
 
+    lat <- obj[["input_nms_lat"]]
+
+    lon <- obj[["input_nms_lon"]]
+
     footprint <- obj[["input_nms_footprint"]]
 
     obj <- to_footprint(obj)
@@ -266,7 +270,7 @@ footprint <- function(obj) {
 
     obj[["data"]][["geo"]] <- obj[["data"]][[footprint]]
 
-    obj[["data"]][[footprint]] <- NULL
+    obj[["data"]][c(lat, lon, footprint)] <- NULL
 
     sf::st_geometry(obj[["data"]]) <- "geo"
 
