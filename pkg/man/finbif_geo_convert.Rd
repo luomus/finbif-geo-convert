@@ -27,7 +27,7 @@ See \code{show_formats()} for a list of available file formats. Use \code{"none"
 \code{"footprint"}.}
 
 \item{crs}{Character or Integer. Coordinate reference system of output. One
-of \code{"euref"}, \code{"kkj"}, \code{"wgs84"} or integer indicating an EPSG code.}
+of \code{"euref"}, \code{"ykj"}, \code{"wgs84"} or integer indicating an EPSG code.}
 
 \item{...}{Other options passed to \code{finbif::finbif_occurrence_load}.}
 }

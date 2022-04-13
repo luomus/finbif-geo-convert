@@ -14,7 +14,7 @@ doc <- "Usage: convert [-h] [-x] [-v] [-o OUT] [-g GEO] [-c CRS] [-n NROWS] [-m]
 
 -o --output OUT          output file path. File format determined from file extension [default: output.gpkg]
 -g --geometry GEO        geometry of output. One of 'point', 'bbox' or 'footprint' [default: point]
--c --crs CRS             coordinate reference system. One of 'wgs84', 'euref', 'kkj' or an EPSG code [default: wgs84]
+-c --crs CRS             coordinate reference system. One of 'wgs84', 'euref', 'ykj' or an EPSG code [default: wgs84]
 -n --nrows NROWS         numbers of rows to extract from the input source. Defaults to all [default: -1]
 -m --missing             include columns where all attributes are missing in attribute table [default: TRUE]
 -h --help                show this help text

@@ -75,5 +75,5 @@ $ curl -JLO https://fgc.rahtiapp.fi/HBF.53254/shp/point/wgs84
 Upload a lite download and get a GeoJSON file back:
 
 ```bash
-$ curl -JLOF file=@laji-data.tsv https://fgc.rahtiapp.fi/test/geojson/point/kkj
+$ curl -JLOF file=@laji-data.tsv https://fgc.rahtiapp.fi/test/geojson/point/ykj
 ```

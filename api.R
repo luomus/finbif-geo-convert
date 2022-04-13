@@ -61,7 +61,7 @@ function() {
 #* @param input:str Input file's identifier.
 #* @param fmt:str The output file format (in the form of a file extension) for the geographic data.
 #* @param geo:str The geometry type of the output. One of 'point', 'bbox' or 'footprint'.
-#* @param crs:str The coordinate reference system for the output. One of "kkj", "euref", "wgs84" or any valid numeric EPSG code.
+#* @param crs:str The coordinate reference system for the output. One of "ykj", "euref", "wgs84" or any valid numeric EPSG code.
 #* @param agg:str Aggregation. 1km, 1km_center, 10km or 10km_center. Ignored if `geo != point`.
 #* @param select:str Which variables to select? Multiple values comma separated.
 #* @param rfcts:str Record level facts. Multiple values comma separated.

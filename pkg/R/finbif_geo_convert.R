@@ -13,7 +13,7 @@
 #' @param geo Character. Geometry of output. One of `"point"`, `"bbox"` or "
 #'   `"footprint"`.
 #' @param crs Character or Integer. Coordinate reference system of output. One
-#'   of `"euref"`, `"kkj"`, `"wgs84"` or integer indicating an EPSG code.
+#'   of `"euref"`, `"ykj"`, `"wgs84"` or integer indicating an EPSG code.
 #' @param ... Other options passed to `finbif::finbif_occurrence_load`.
 #'
 #' @return An `{sf}` package simple feature object (invisibly). And if
@@ -509,8 +509,8 @@ write_gdal_file <- function(obj) {
 deselect <- c(
   "lon_min_wgs84", "lat_min_wgs84", "lon_max_wgs84", "lat_max_wgs84",
   "lat_euref", "lon_euref", "lon_min_euref", "lat_min_euref",
-  "lon_max_euref", "lat_max_euref", "lon_min_kkj", "lat_min_kkj",
-  "lon_max_kkj", "lat_max_kkj", "coordinates_euref"
+  "lon_max_euref", "lat_max_euref", "lon_min_ykj", "lat_min_ykj",
+  "lon_max_ykj", "lat_max_ykj", "coordinates_euref"
 )
 
 #' @noRd
