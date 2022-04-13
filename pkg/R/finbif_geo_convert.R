@@ -289,7 +289,9 @@ bbox <- function(obj) {
       function(x) if (is.na(x)) sf::st_polygon() else sf::st_as_sfc(x)[[1L]]
     )
 
-    obj[["data"]][["geo"]]<- sf::st_as_sfc(bbox)
+    crs <- switch(obj[["crs"]], euref = 3067L, wgs84 = 4326L)
+
+    obj[["data"]][["geo"]] <- sf::st_as_sfc(bbox, crs = crs)
 
   }
 
