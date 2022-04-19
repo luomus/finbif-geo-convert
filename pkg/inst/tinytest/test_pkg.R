@@ -14,8 +14,6 @@ logger::log_appender(logger::appender_tee(log_file))
 
 expect_inherits(api(file = "~/api.R"), "Plumber")
 
-expect_equal(fgc:::bb(NA, NA, NA, NA), list(sf::st_polygon()))
-
 expect_inherits(fgc:::pre(), "numeric")
 
 expect_null(fgc:::post(c(PATH_INFO = "/healthz"), c(status = 400)))
@@ -32,6 +30,10 @@ expect_null(
 
 expect_inherits(finbif_geo_convert("laji-data.tsv"), "sf")
 
+expect_inherits(finbif_geo_convert("laji-data2.tsv"), "sf")
+
+expect_inherits(finbif_geo_convert("laji-data2.tsv", geo = "footprint"), "sf")
+
 suppressWarnings(
   finbif_geo_convert(
     "HBF.53254.zip", "HBF.53254.shp", "footprint", crs = "euref"
@@ -46,22 +48,14 @@ finbif_geo_convert("HBF.53254.zip", "HBF.53254.rds")
 
 expect_inherits(readRDS("HBF.53254.rds"), "sf")
 
-finbif_geo_convert("HBF.53254.zip", "HBF.53254.gpkg", dwc = TRUE)
+finbif_geo_convert("HBF.53254.zip", "HBF.53254.gpkg")
 
 expect_inherits(sf::st_read("HBF.53254.gpkg"), "sf")
 
 expect_inherits(finbif_geo_convert("HBF.53254.zip", "none", "bbox"), "sf")
 
 expect_inherits(
-  finbif_geo_convert("HBF.53254.zip", "none", "bbox", crs = 4123), "sf"
-)
-
-expect_inherits(
   finbif_geo_convert("HBF.53254.zip", "none", "bbox", crs = "euref"), "sf"
-)
-
-expect_inherits(
-  finbif_geo_convert("HBF.53254.zip", "none", "point", crs = "kkj"), "sf"
 )
 
 unlink(
@@ -114,11 +108,11 @@ expect_inherits(mpol, "MULTIPOLYGON")
 
 gc <- fgc:::uncollect(
   sf::st_geometrycollection(
-    list(sf::st_point(c(0, 0)), sf::st_linestring(cbind(0, 0)))
+    list(sf::st_point(c(0, 0)), sf::st_linestring(cbind(c(0, 1), c(0, 1))))
   )
 )
 
-expect_inherits(gc, "GEOMETRYCOLLECTION")
+expect_inherits(gc, "MULTIPOLYGON")
 
 tri <- fgc:::uncollect(
   sf::st_geometrycollection(sf::st_as_sfc("TRIANGLE ((0 0, 0 1, 1 0, 0 0))"))
@@ -135,4 +129,3 @@ expect_equal(
   sanitise_id("HBF.645"),
   list(file = "https://tun.fi/HBF.645", name = "HBF.645")
 )
-
