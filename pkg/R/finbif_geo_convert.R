@@ -352,7 +352,7 @@ buffer <- function(obj) {
 }
 
 #' @noRd
-#' @importFrom sf st_as_sfc st_crs st_geometry_type
+#' @importFrom sf st_as_sfc st_geometry_type st_transform
 #' @importFrom stringi stri_replace_na
 to_footprint <- function(obj) {
 
@@ -372,19 +372,23 @@ to_footprint <- function(obj) {
     obj[["data"]][[footprint]], "POLYGON EMPTY"
   )
 
-  obj[["data"]][[footprint]] <- sf::st_as_sfc(obj[["data"]][[footprint]])
+  obj[["data"]][[footprint]] <- sf::st_as_sfc(
+    obj[["data"]][[footprint]], crs = 4326L
+  )
 
   gc <- geometry_type_chr(obj[["data"]][[footprint]]) == "GEOMETRYCOLLECTION"
 
   if (identical(obj[["geo"]], "footprint") && any(gc)) {
 
-    uncollected <- lapply(obj[["data"]][[footprint]][gc], uncollect)
+    uncollected <- sf::st_transform(obj[["data"]][[footprint]][gc], crs = 3067L)
 
-    obj[["data"]][[footprint]][gc] <- sf::st_as_sfc(uncollected)
+    uncollected <- lapply(uncollected, uncollect)
+
+    uncollected <- sf::st_as_sfc(uncollected, crs = 3067L)
+
+    obj[["data"]][[footprint]][gc] <- sf::st_transform(uncollected, crs = 4326L)
 
   }
-
-  sf::st_crs(obj[["data"]][[footprint]]) <- 4326L
 
   obj
 
@@ -406,13 +410,35 @@ uncollect <- function(x) {
 
       x <- switch(
         utype,
-        "POINT" = sf::st_multipoint(matrix(unlist(x), ncol = 2, byrow = TRUE)),
+        "POINT" = sf::st_multipoint(matrix(unlist(x), ncol = 2L, byrow = TRUE)),
         "LINESTRING" = sf::st_multilinestring(x),
         "POLYGON" = sf::st_multipolygon(x),
         x
       )
 
+    } else {
+
+      x <- lapply(x, to_polygon)
+
+      x <- sf::st_multipolygon(x)
+
     }
+
+  }
+
+  x
+
+}
+
+#' @noRd
+#' @importFrom sf st_buffer
+to_polygon <- function(x) {
+
+  geometries <- c("LINESTRING", "POINT", "MULTILINESTRING", "MULTIPOINT")
+
+  if (geometry_type_chr(x) %in% geometries) {
+
+    x <- sf::st_buffer(x, .5, 1L)
 
   }
 

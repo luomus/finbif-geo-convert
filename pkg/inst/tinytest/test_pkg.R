@@ -108,11 +108,11 @@ expect_inherits(mpol, "MULTIPOLYGON")
 
 gc <- fgc:::uncollect(
   sf::st_geometrycollection(
-    list(sf::st_point(c(0, 0)), sf::st_linestring(cbind(0, 0)))
+    list(sf::st_point(c(0, 0)), sf::st_linestring(cbind(c(0, 1), c(0, 1))))
   )
 )
 
-expect_inherits(gc, "GEOMETRYCOLLECTION")
+expect_inherits(gc, "MULTIPOLYGON")
 
 tri <- fgc:::uncollect(
   sf::st_geometrycollection(sf::st_as_sfc("TRIANGLE ((0 0, 0 1, 1 0, 0 0))"))
