@@ -206,7 +206,7 @@ function(
 
         zip(
           paste0(output, ".zip"),
-          setdiff(list.files(id, full.names = TRUE), c(input_file, orig_file)),
+          setdiff(list.files(id, full.names = TRUE), c(input_file, orig_path)),
           flags = "-rj9qX"
         )
 
