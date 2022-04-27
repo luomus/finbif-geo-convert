@@ -200,7 +200,7 @@ function(
 
         orig_files <- orig_files[["Name"]]
 
-        readme <- grep("^readme.*\\.txt$", files, value = TRUE)
+        readme <- grep("^readme.*\\.txt$", orig_files, value = TRUE)
 
         unzip(orig_path, readme, exdir = id)
 
