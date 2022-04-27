@@ -196,13 +196,17 @@ function(
 
       } else {
 
-        orig_files <- unzip(orig_path, list = TRUE)
+        if (file.exists(orig_path)) {
 
-        orig_files <- orig_files[["Name"]]
+          orig_files <- unzip(orig_path, list = TRUE)
 
-        readme <- grep("^readme.*\\.txt$", orig_files, value = TRUE)
+          orig_files <- orig_files[["Name"]]
 
-        unzip(orig_path, readme, exdir = id)
+          readme <- grep("^readme.*\\.txt$", orig_files, value = TRUE)
+
+          unzip(orig_path, readme, exdir = id)
+
+        }
 
         zip(
           paste0(output, ".zip"),
