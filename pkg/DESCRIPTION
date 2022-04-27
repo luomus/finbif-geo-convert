@@ -1,6 +1,6 @@
 Package: fgc
 Title: FinBIF geographic data conversion
-Version: 0.2.0
+Version: 0.2.1
 Authors@R: c(
     person(given = "Finnish Museum of Natural History - Luomus",
            role = "cph"),
@@ -20,9 +20,8 @@ Imports:
     plumber,
     tictoc,
     sf,
-    stats,
     stringi,
-    tidyselect,
+    rlang,
     tools
 Suggests:
     callr,
@@ -32,7 +31,6 @@ Suggests:
     later,
     rapidoc,
     tinytest,
-    tools,
     withr
 License: GPL-2
 Encoding: UTF-8

@@ -31,6 +31,9 @@ parameters:
   - name: DEV_BRANCH
     required: true
     value: dev
+  - name: FILE_SIZE_LIMIT
+    required: true
+    value: "3e7"
   - name: STORAGE
     required: true
     value: "5Gi"
@@ -182,6 +185,8 @@ objects:
           env:
           - name: PAGE_TITLE
             value: ${APP_TITLE}
+          - name: FINBIF_FILE_SIZE_LIMIT
+            value: ${FILE_SIZE_LIMIT}
         volumes:
         - name: ${LOG}
           persistentVolumeClaim:
@@ -238,6 +243,8 @@ objects:
             value: ${APP_TITLE}-dev
           - name: BRANCH
             value: ${DEV_BRANCH}
+          - name: FINBIF_FILE_SIZE_LIMIT
+            value: ${FILE_SIZE_LIMIT}
         volumes:
         - name: dev-${LOG}
           persistentVolumeClaim:

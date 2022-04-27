@@ -18,7 +18,7 @@ read_error_msg <- function(err) {
 
   msg <- err[[1L]][[1L]]
 
-  msg <- sub("^Error : ", "", msg)
+  msg <- sub("^Error ?: ", "", msg)
 
   name <- "error"
 
