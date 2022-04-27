@@ -33,7 +33,7 @@ parameters:
     value: dev
   - name: FILE_SIZE_LIMIT
     required: true
-    value: "3e7""
+    value: "3e7"
   - name: STORAGE
     required: true
     value: "5Gi"
