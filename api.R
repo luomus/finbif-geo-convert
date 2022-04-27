@@ -179,7 +179,7 @@ function(
 
       orig_path <- paste0(id, "/", orig_file)
 
-      Sys.setenv("FINBIF_FILE_SIZE_LIMIT", limit)
+      Sys.setenv("FINBIF_FILE_SIZE_LIMIT" = limit)
 
       res <- try(
         fgc::finbif_geo_convert(
