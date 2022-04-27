@@ -149,6 +149,8 @@ function(
 
   output <- paste0(id, "/", input[["name"]], ".geo.", fmt)
 
+  limit <- Sys.getenv("FINBIF_FILE_SIZE_LIMIT")
+
   promises::future_promise(
     {
 
@@ -176,6 +178,8 @@ function(
       orig_file <- "original_download.zip"
 
       orig_path <- paste0(id, "/", orig_file)
+
+      Sys.setenv("FINBIF_FILE_SIZE_LIMIT", limit)
 
       res <- try(
         fgc::finbif_geo_convert(
@@ -215,7 +219,7 @@ function(
     },
     globals = c(
       "input", "output", "geo", "agg", "crs", "select", "facts", "dwc",
-      "missing", "id", "file", "filetype", "personToken"
+      "missing", "id", "file", "filetype", "personToken", "limit"
     ),
     packages = "fgc"
   )
