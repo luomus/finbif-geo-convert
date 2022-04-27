@@ -173,10 +173,15 @@ function(
 
       }
 
+      orig_file <- "original_download.zip"
+
+      orig_path <- paste0(id, "/", orig_file)
+
       res <- try(
         fgc::finbif_geo_convert(
           input_file, output, geo, crs, dwc = dwc, drop_na = !missing,
-          drop_facts_na = !missingfcts, quiet = TRUE
+          drop_facts_na = !missingfcts, quiet = TRUE, cache = FALSE,
+          write_file = orig_path
         ),
         silent = TRUE
       )
@@ -191,9 +196,17 @@ function(
 
       } else {
 
+        orig_files <- unzip(orig_path, list = TRUE)
+
+        orig_files <- orig_files[["Name"]]
+
+        readme <- grep("^readme.*\\.txt$", files, value = TRUE)
+
+        unzip(orig_path, readme, exdir = id)
+
         zip(
           paste0(output, ".zip"),
-          setdiff(list.files(id, full.names = TRUE), input_file),
+          setdiff(list.files(id, full.names = TRUE), c(input_file, orig_file)),
           flags = "-rj9qX"
         )
 
