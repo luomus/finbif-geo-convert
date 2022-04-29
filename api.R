@@ -194,6 +194,21 @@ function(
 
          file.copy(err_file, sprintf("logs/errors/%s.txt", id))
 
+         if (file.exists(orig_path)) {
+
+           file.copy(orig_path, sprintf("logs/errors/%s.zip", id))
+
+         }
+
+         if (file.exists(input_file)) {
+
+           file.copy(
+             input_file,
+             sprintf("logs/errors/%s.%s", id, tools::file_ext(names(file)))
+           )
+
+         }
+
       } else {
 
         if (file.exists(orig_path)) {
