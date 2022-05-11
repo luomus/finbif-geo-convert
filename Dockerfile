@@ -28,6 +28,7 @@ RUN apt-get update \
 RUN add-apt-repository ppa:ubuntugis/ubuntugis-unstable \
  && apt-get update \
  && apt-get install -y --no-install-recommends \
+      gdal-bin \
       libudunits2-dev \
       libgeos-dev \
       libproj-dev \
@@ -69,7 +70,7 @@ RUN install2.r -e \
       withr \
       wk
 
-RUN installGithub.r r-spatial/sf luomus/finbif@05b59fdc
+RUN installGithub.r r-spatial/sf luomus/finbif@e3439ad8
 
 HEALTHCHECK --interval=1m --timeout=10s \
   CMD curl -sfI -o /dev/null 0.0.0.0:8000/healthz || exit 1

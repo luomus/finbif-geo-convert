@@ -84,6 +84,8 @@ get_input <- function(obj, ...) {
     ...
   )
 
+  obj[["n_rows"]] <- attr(obj[["data"]], "nrec_avl")
+
   obj[["col_names"]] <- names(obj[["data"]])
 
   obj
@@ -467,15 +469,34 @@ footprint_to_points <- function(x) {
 #' @noRd
 write_file <- function(obj) {
 
-  switch(
+  obj <- switch(
     obj[["fmt"]],
-    none = NULL,
-    rds = saveRDS(obj[["data"]], file = obj[["output"]]),
+    none = obj,
+    rds = write_rds_file(obj),
     shp = write_shp_file(obj),
     write_gdal_file(obj)
   )
 
-  invisible(obj[["data"]])
+  out <- obj[["data"]]
+
+  attr(out, "output") <- obj[["output"]]
+
+  attr(out, "layer") <- obj[["layer"]]
+
+  attr(out, "n_rows") <- obj[["n_rows"]]
+
+  attr(out, "geo_types") <- obj[["geo_types"]]
+
+  invisible(out)
+
+}
+
+#' @noRd
+write_rds_file <- function(obj) {
+
+  saveRDS(obj[["data"]], file = obj[["output"]])
+
+  obj
 
 }
 
@@ -501,21 +522,30 @@ write_shp_file <- function(obj) {
 
   }
 
+  obj[["geo_types"]] <- ""
+
   if (length(data) > 1L) {
 
+    obj[["geo_types"]] <- tolower(unique_geo_types)
+
     obj[["output"]] <- sprintf(
-      gsub("\\.shp$", "_%s.shp", obj[["output"]]), tolower(names(data))
+      gsub("\\.shp$", "_%s.shp", obj[["output"]]), obj[["geo_types"]]
     )
 
   }
 
-  names(data) <- obj[["output"]]
+  obj[["layer"]] <- basename(tools::file_path_sans_ext(obj[["output"]]))
 
-  for (i in names(data)) {
+  for (i in seq_along(data)) {
 
-    sf::st_write(data[[i]], i, layer_options = "ENCODING=UTF-8", quiet = TRUE)
+    sf::st_write(
+      data[[i]], obj[["output"]][[i]], layer_options = "ENCODING=UTF-8",
+      quiet = TRUE
+    )
 
   }
+
+  obj
 
 }
 
@@ -524,14 +554,20 @@ write_shp_file <- function(obj) {
 #' @importFrom tools file_path_sans_ext
 write_gdal_file <- function(obj) {
 
+  obj[["geo_types"]] <- ""
+
+  obj[["layer"]] <- gsub(
+    "\\.", "_", basename(tools::file_path_sans_ext(obj[["output"]]))
+  )
+
   sf::st_write(
     obj[["data"]],
     obj[["output"]],
-    layer = gsub(
-      "\\.", "_", basename(tools::file_path_sans_ext(obj[["output"]]))
-    ),
+    layer = obj[["layer"]],
     quiet = TRUE
   )
+
+  obj
 
 }
 
