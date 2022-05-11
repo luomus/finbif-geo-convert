@@ -219,9 +219,15 @@ function(
 
                 if (geo_types_additional[[i]] %in% geo_types_combined) {
 
-                  ii <- grep(
-                    paste0("_", geo_types_additional[[i]]), files_combined
-                  )
+                  ii <- 1
+
+                  if (!identical(geo_types_additional[[i]], "")) {
+
+                    ii <- grep(
+                      paste0("_", geo_types_additional[[i]]), files_combined
+                    )
+
+                  }
 
                   error_code <- system2(
                     "ogr2ogr",
