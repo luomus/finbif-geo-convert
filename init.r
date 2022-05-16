@@ -26,7 +26,7 @@ for (pkg in pkgs) {
 
 }
 
-future::plan("multicore")
+future::plan("multicore", workers = 20L)
 
 options(plumber.maxRequestSize = 1e8L)
 
