@@ -96,13 +96,9 @@ get_input <- function(obj, ...) {
 #' @importFrom stringi stri_trans_general
 sanitise_nms <- function(obj) {
 
-  if (identical(obj[["fmt"]] , "shp")) {
-
-    names(obj[["data"]]) <- stringi::stri_trans_general(
-      names(obj[["data"]]), "Latin-ASCII"
-    )
-
-  }
+  names(obj[["data"]]) <- stringi::stri_trans_general(
+    names(obj[["data"]]), "Latin-ASCII"
+  )
 
   obj
 
