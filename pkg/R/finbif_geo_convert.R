@@ -530,31 +530,14 @@ write_rds_file <- function(obj) {
 
 #' @noRd
 #' @importFrom sf st_write
+#' @importFrom tools file_path_sans_ext
 write_shp_file <- function(obj) {
 
-  geo_types <- geometry_type_chr(obj[["data"]])
+  obj <- split_data_by_gtype(obj)
 
-  unique_geo_types <- unique(geo_types)
+  if (length(obj[["data"]]) > 1L) {
 
-  error_if(
-    anyNA(match(unique_geo_types, shp_fmt_types)),
-    "Geometry too complex for '.shp' file. Please select another format.",
-    "too_complex"
-  )
-
-  data <- list()
-
-  for (i in unique_geo_types) {
-
-    data[[i]] <- obj[["data"]][geo_types == i, ]
-
-  }
-
-  obj[["geo_types"]] <- ""
-
-  if (length(data) > 1L) {
-
-    obj[["geo_types"]] <- sub("^multi", "", tolower(unique_geo_types))
+    obj[["geo_types"]] <- sub("^multi", "", tolower(names(obj[["data"]])))
 
     obj[["output"]] <- sprintf(
       sub("\\.shp$", "_%s.shp", obj[["output"]]), obj[["geo_types"]]
@@ -564,10 +547,12 @@ write_shp_file <- function(obj) {
 
   obj[["layer"]] <- basename(tools::file_path_sans_ext(obj[["output"]]))
 
-  for (i in seq_along(data)) {
+  for (i in seq_along(obj[["data"]])) {
 
     sf::st_write(
-      data[[i]], obj[["output"]][[i]], layer_options = "ENCODING=UTF-8",
+      obj[["data"]][[i]],
+      obj[["output"]][[i]],
+      layer_options = "ENCODING=UTF-8",
       quiet = TRUE
     )
 
@@ -582,18 +567,65 @@ write_shp_file <- function(obj) {
 #' @importFrom tools file_path_sans_ext
 write_gdal_file <- function(obj) {
 
-  obj[["geo_types"]] <- ""
+  obj <- split_data_by_gtype(obj)
+
+  sep <- ""
+
+  gtypes_out <- ""
+
+  if (length(obj[["data"]]) > 1L) {
+
+    sep <- "_"
+
+    gtypes_out <- sub("^multi", "", tolower(names(obj[["data"]])))
+
+  }
 
   obj[["layer"]] <- gsub(
     "\\.", "_", basename(tools::file_path_sans_ext(obj[["output"]]))
   )
 
-  sf::st_write(
-    obj[["data"]],
-    obj[["output"]],
-    layer = obj[["layer"]],
-    quiet = TRUE
+  for (i in seq_along(obj[["data"]])) {
+
+    sf::st_write(
+      obj[["data"]][[i]],
+      obj[["output"]],
+      layer = paste(obj[["layer"]], gtypes_out[[i]], sep = sep),
+      quiet = TRUE
+    )
+
+  }
+
+  obj
+
+}
+
+#' @noRd
+split_data_by_gtype <- function(obj) {
+
+  geo_types <- geometry_type_chr(obj[["data"]])
+
+  unique_geo_types <- unique(geo_types)
+
+  shp_incompatible <- anyNA(match(unique_geo_types, shp_fmt_types))
+
+  error_if(
+    shp_incompatible && identical(obj[["fmt"]], "shp"),
+    "Geometry too complex for '.shp' file. Please select another format.",
+    "too_complex"
   )
+
+  data <- list()
+
+  for (i in unique_geo_types) {
+
+    data[[i]] <- obj[["data"]][geo_types == i, ]
+
+  }
+
+  obj[["data"]] <- data
+
+  obj[["geo_types"]] <- ""
 
   obj
 

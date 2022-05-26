@@ -48,7 +48,7 @@ finbif_geo_convert("HBF.53254.zip", "HBF.53254.rds")
 
 expect_inherits(readRDS("HBF.53254.rds"), "sf")
 
-finbif_geo_convert("HBF.53254.zip", "HBF.53254.gpkg")
+finbif_geo_convert("HBF.53254.zip", "HBF.53254.gpkg", geo = "footprint")
 
 expect_inherits(sf::st_read("HBF.53254.gpkg"), "sf")
 
