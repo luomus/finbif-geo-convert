@@ -396,6 +396,14 @@ to_footprint <- function(obj) {
 
   }
 
+  obj[["data"]][[footprint]] <- lapply(
+    obj[["data"]][[footprint]], cast_to_multi
+  )
+
+  obj[["data"]][[footprint]] <- sf::st_as_sfc(
+    obj[["data"]][[footprint]], crs = 4326L
+  )
+
   obj
 
 }
@@ -429,6 +437,22 @@ uncollect <- function(x) {
       x <- sf::st_multipolygon(x)
 
     }
+
+  }
+
+  x
+
+}
+
+#' @noRd
+#' @importFrom sf st_cast
+cast_to_multi <- function(x) {
+
+  gtype <- geometry_type_chr(x)
+
+  if (!grepl("MULTI", gtype)) {
+
+    x <- sf::st_cast(x, paste0("MULTI", gtype))
 
   }
 
@@ -530,10 +554,10 @@ write_shp_file <- function(obj) {
 
   if (length(data) > 1L) {
 
-    obj[["geo_types"]] <- tolower(unique_geo_types)
+    obj[["geo_types"]] <- sub("^multi", "", tolower(unique_geo_types))
 
     obj[["output"]] <- sprintf(
-      gsub("\\.shp$", "_%s.shp", obj[["output"]]), obj[["geo_types"]]
+      sub("\\.shp$", "_%s.shp", obj[["output"]]), obj[["geo_types"]]
     )
 
   }

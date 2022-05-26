@@ -73,7 +73,7 @@ suppressWarnings(
 )
 
 expect_inherits(
-  sf::st_read("HBF.55685_multilinestring.shp", quiet = TRUE), "sf"
+  sf::st_read("HBF.55685_linestring.shp", quiet = TRUE), "sf"
 )
 
 unlink(
@@ -83,10 +83,7 @@ unlink(
     "HBF.55685_polygon.dbf", "HBF.55685_polygon.prj", "HBF.55685_polygon.shp",
     "HBF.53254_polygon.shx", "HBF.55685_linestring.cpg",
     "HBF.55685_linestring.dbf", "HBF.55685_linestring.prj",
-    "HBF.55685_linestring.shp", "HBF.53254_linestring.shx",
-    "HBF.55685_multilinestring.cpg", "HBF.55685_multilinestring.dbf",
-    "HBF.55685_multilinestring.prj", "HBF.55685_multilinestring.shp",
-    "HBF.55685_multilinestring.shx"
+    "HBF.55685_linestring.shp", "HBF.53254_linestring.shx"
   )
 )
 
