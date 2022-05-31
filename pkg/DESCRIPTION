@@ -1,6 +1,6 @@
 Package: fgc
 Title: FinBIF geographic data conversion
-Version: 0.2.1
+Version: 0.2.2
 Authors@R: c(
     person(given = "Finnish Museum of Natural History - Luomus",
            role = "cph"),
@@ -35,4 +35,4 @@ Suggests:
 License: GPL-2
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.0

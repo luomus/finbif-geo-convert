@@ -80,8 +80,8 @@ function() {
 #* @serializer unboxedJSON
 function(
   input, fmt, geo, crs, agg = "none", select = "all", rfcts = "none",
-  efcts = "none", dfcts = "none", dwc = "false", missing = "false",
-  missingfcts = "false", timeout = 30, persist = 1, file = "",
+  efcts = "none", dfcts = "none", dwc = "false", missing = "true",
+  missingfcts = "true", timeout = 30, persist = 1, file = "",
   filetype = "citable", personToken = "", req, res
 ) {
 
@@ -102,10 +102,7 @@ function(
   input_file <- switch(
     req[["REQUEST_METHOD"]],
     GET = input[["file"]],
-    POST = tempfile(
-      tmpdir = id,
-      fileext = paste0(".", tools::file_ext(names(file)))
-    )
+    POST = paste0(id, "/", names(file)[[1L]])
   )
 
   select <- scan(text = select, what = "char", sep = ",", quiet = TRUE)
@@ -147,8 +144,6 @@ function(
   dwc <- match.arg(dwc, c("true", "false"))
   dwc <- switch(dwc, true = TRUE, false = FALSE)
 
-  output <- paste0(id, "/", input[["name"]], ".geo.", fmt)
-
   promises::future_promise(
     {
 
@@ -178,11 +173,127 @@ function(
       orig_path <- paste0(id, "/", orig_file)
 
       res <- try(
-        fgc::finbif_geo_convert(
-          input_file, output, geo, crs, dwc = dwc, drop_na = !missing,
-          drop_facts_na = !missingfcts, quiet = TRUE, cache = FALSE,
-          write_file = orig_path
-        ),
+        {
+
+          output_base <- paste0(id, "/", input[["name"]], ".geo.", fmt)
+          output_file <- output_base
+          skip <- 0L
+          n <- as.integer(Sys.getenv("MAX_CHUNK_SIZE", "1e5"))
+          data <- list()
+          attr(data, "n_rows") <- Inf
+          acc <- character()
+          fmt_name <- switch(fmt, shp = "'ESRI Shapefile'", gpkg = "'gpkg'")
+
+          progress_file <- file.path(id, "progress")
+
+          while (skip < attr(data, "n_rows")) {
+
+            cat(
+              as.integer(skip / attr(data, "n_rows") * 10) * 10L,
+              file = progress_file
+            )
+
+            data <- fgc::finbif_geo_convert(
+              input_file, output_file, geo, crs, dwc = dwc, drop_na = !missing,
+              drop_facts_na = !missingfcts, quiet = TRUE, cache = FALSE,
+              write_file = orig_path, n = n, skip = skip
+            )
+
+            if (length(acc) < 1L) {
+
+              files_combined <- attr(data, "output")
+
+              layers_combined <- attr(data, "layer")
+
+              geo_types_combined <- attr(data, "geo_types")
+
+            } else {
+
+              files_additional <- attr(data, "output")
+
+              layers_additional <- attr(data, "layer")
+
+              geo_types_additional <- attr(data, "geo_types")
+
+              for (i in seq_along(geo_types_additional)) {
+
+                if (geo_types_additional[[i]] %in% geo_types_combined) {
+
+                  ii <- 1
+
+                  if (!identical(geo_types_additional[[i]], "")) {
+
+                    ii <- grep(
+                      paste0("_", geo_types_additional[[i]]), files_combined
+                    )
+
+                  }
+
+                  error_code <- system2(
+                    "ogr2ogr",
+                    c(
+                      "-f", fmt_name, "-update", "-append",
+                      files_combined[[ii]], files_additional[[i]], "-nln",
+                      layers_combined[[ii]]
+                    ),
+                    stdout = FALSE,
+                    stderr = FALSE
+                  )
+
+                } else {
+
+                  files_combined <- c(
+                    files_combined,
+                    sub(
+                      paste0("\\.", "additional_file_"), "", files_additional
+                    )
+                  )
+
+                  layers_combined <- c(
+                    layers_combined,
+                    sub(
+                      paste0("\\.", "additional_file_"), "", layers_additional
+                    )
+                  )
+
+                  ii <- length(files_combined)
+
+                  error_code <- system2(
+                    "ogr2ogr",
+                    c(
+                      "-f", fmt_name, files_combined[[ii]],
+                      files_additional[[i]], "-nln", layers_combined[[ii]]
+                    ),
+                    stdout = FALSE,
+                    stderr = FALSE
+                  )
+
+                }
+
+                if (!identical(error_code, 0L)) {
+
+                  stop(
+                    "Could not combine files; err_name: combine_failed",
+                    call. = FALSE
+                  )
+
+                }
+
+              }
+
+            }
+
+            skip <- skip + n
+
+            acc <- c(acc, paste0("additional_file_", length(acc) + 1L))
+
+            output_file <- paste0(
+              id, "/", input[["name"]], ".geo.", acc[length(acc)], ".", fmt
+            )
+
+          }
+
+        },
         silent = TRUE
       )
 
@@ -204,7 +315,7 @@ function(
 
            file.copy(
              input_file,
-             sprintf("logs/errors/%s.%s", id, tools::file_ext(names(file)))
+             sprintf("logs/errors/%s.%s", id, tools::file_ext(input_file))
            )
 
          }
@@ -223,9 +334,16 @@ function(
 
         }
 
+        additional_files <- list.files(
+          id, "additional_file_", full.names = TRUE
+        )
+
         zip(
-          paste0(output, ".zip"),
-          setdiff(list.files(id, full.names = TRUE), c(input_file, orig_path)),
+          paste0(output_base, ".zip"),
+          setdiff(
+            list.files(id, full.names = TRUE),
+            c(input_file, orig_path, additional_files, progress_file)
+          ),
           flags = "-rj9qX"
         )
 
@@ -233,8 +351,8 @@ function(
 
     },
     globals = c(
-      "input", "output", "geo", "agg", "crs", "select", "facts", "dwc",
-      "missing", "id", "file", "filetype", "personToken"
+      "input", "input_file", "fmt", "geo", "agg", "crs", "select", "facts",
+      "dwc", "missing", "id", "file", "filetype", "personToken"
     ),
     packages = "fgc"
   )
@@ -314,7 +432,11 @@ function(id, timeout = 30L, res) {
 
       if (identical(., "pending")) {
 
-         list(id = id, status = .)
+         list(
+           id = id,
+           status = .,
+           progress_percent = scan(file.path(id, "progress"), quiet = TRUE)
+         )
 
       } else if (identical(., "error")) {
 
@@ -333,7 +455,7 @@ function(id, timeout = 30L, res) {
         res$status <- 303L
         res$setHeader("Location", paste0("/output/", id))
 
-        list(id = id, status = "complete")
+        list(id = id, status = "complete", progress_percent = 100)
 
       }
 
