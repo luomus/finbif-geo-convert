@@ -175,14 +175,14 @@ function(
       res <- try(
         {
 
-          output_base <- paste0(id, "/", input[["name"]], ".geo.", fmt)
-          output_file <- output_base
+          output_file_init <- paste0(id, "/", input[["name"]], ".geo.", fmt)
+          output_file <- output_file_init
           skip <- 0L
           n <- as.integer(Sys.getenv("MAX_CHUNK_SIZE", "1e5"))
           data <- list()
           attr(data, "n_rows") <- Inf
           acc <- character()
-          fmt_name <- switch(fmt, shp = "'ESRI Shapefile'", gpkg = "'gpkg'")
+          fmt_name <- switch(fmt, shp = "'ESRI Shapefile'", "'gpkg'")
 
           progress_file <- file.path(id, "progress")
 
@@ -201,40 +201,45 @@ function(
 
             if (length(acc) < 1L) {
 
-              files_combined <- attr(data, "output")
-
-              layers_combined <- attr(data, "layer")
-
               geo_types_combined <- attr(data, "geo_types")
 
             } else {
 
-              files_additional <- attr(data, "output")
+              for (i in seq_along(attr(data, "geo_types"))) {
 
-              layers_additional <- attr(data, "layer")
-
-              geo_types_additional <- attr(data, "geo_types")
-
-              for (i in seq_along(geo_types_additional)) {
-
-                if (geo_types_additional[[i]] %in% geo_types_combined) {
-
-                  ii <- 1
-
-                  if (!identical(geo_types_additional[[i]], "")) {
-
-                    ii <- grep(
-                      paste0("_", geo_types_additional[[i]]), files_combined
+                args <- switch(
+                  fmt,
+                  shp = list(
+                    file = sprintf(
+                      "%s/%s_%s.%s", id, basename(attr(data, "output")),
+                      attr(data, "geo_types")[[i]], fmt
+                    ),
+                    add_file = sprintf(
+                      "%s/%s/%s_%s.%s", id, acc[[length(acc)]],
+                      basename(attr(data, "output")),
+                      attr(data, "geo_types")[[i]], fmt
                     )
+                  ),
+                  list(
+                    file = output_file_init,
+                    add_file = output_file
+                  )
+                )
 
-                  }
+                args[["layer"]] <- sprintf(
+                  "%s_%s", basename(attr(data, "output")),
+                  attr(data, "geo_types")[[i]]
+                )
+
+                cond <- attr(data, "geo_types")[[i]] %in% geo_types_combined
+
+                if (cond || !identical(fmt, "shp")) {
 
                   error_code <- system2(
                     "ogr2ogr",
                     c(
-                      "-f", fmt_name, "-update", "-append",
-                      files_combined[[ii]], files_additional[[i]], "-nln",
-                      layers_combined[[ii]]
+                      "-f", fmt_name, "-update", "-append", args[["file"]],
+                      args[["add_file"]], "-nln", args[["layer"]]
                     ),
                     stdout = FALSE,
                     stderr = FALSE
@@ -242,30 +247,18 @@ function(
 
                 } else {
 
-                  files_combined <- c(
-                    files_combined,
-                    sub(
-                      paste0("\\.", "additional_file_"), "", files_additional
-                    )
-                  )
-
-                  layers_combined <- c(
-                    layers_combined,
-                    sub(
-                      paste0("\\.", "additional_file_"), "", layers_additional
-                    )
-                  )
-
-                  ii <- length(files_combined)
-
                   error_code <- system2(
                     "ogr2ogr",
                     c(
-                      "-f", fmt_name, files_combined[[ii]],
-                      files_additional[[i]], "-nln", layers_combined[[ii]]
+                      "-f", fmt_name, args[["file"]], args[["add_file"]],
+                      "-nln", args[["layer"]]
                     ),
                     stdout = FALSE,
                     stderr = FALSE
+                  )
+
+                  geo_types_combined <- c(
+                    geo_types_combined, attr(data, "geo_types")[[i]]
                   )
 
                 }
@@ -285,10 +278,14 @@ function(
 
             skip <- skip + n
 
-            acc <- c(acc, paste0("additional_file_", length(acc) + 1L))
+            next_file <- paste0("additional_file_", length(acc) + 1L)
+
+            acc <- c(acc, next_file)
+
+            dir.create(file.path(id, next_file))
 
             output_file <- paste0(
-              id, "/", input[["name"]], ".geo.", acc[length(acc)], ".", fmt
+              id, "/", next_file, "/", input[["name"]], ".geo.", fmt
             )
 
           }
@@ -339,7 +336,7 @@ function(
         )
 
         zip(
-          paste0(output_base, ".zip"),
+          paste0(output_file_init, ".zip"),
           setdiff(
             list.files(id, full.names = TRUE),
             c(input_file, orig_path, additional_files, progress_file)

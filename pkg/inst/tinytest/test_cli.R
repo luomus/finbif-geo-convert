@@ -13,11 +13,11 @@ system(
   ignore.stderr = TRUE
 )
 
-expect_inherits(sf::st_read("HBF.53254.shp", quiet = TRUE), "sf")
+expect_inherits(sf::st_read("HBF.53254_point.shp", quiet = TRUE), "sf")
 
 unlink(
   c(
-    "HBF.53254.cpg", "HBF.53254.dbf", "HBF.53254.prj", "HBF.53254.shp",
-    "HBF.53254.shx"
+    "HBF.53254_point.cpg", "HBF.53254_point.dbf", "HBF.53254_point.prj",
+    "HBF.53254_point.shp", "HBF.53254_point.shx"
   )
 )

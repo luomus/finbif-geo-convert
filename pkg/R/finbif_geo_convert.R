@@ -56,16 +56,19 @@ finbif_geo_convert <- function(
 
 #' @noRd
 #' @importFrom tools file_ext
+#' @importFrom tools file_path_sans_ext
 get_fmt <- function(obj) {
 
-  output <- obj[["output"]]
-
-  obj[["fmt"]] <- switch(output, none = output, tools::file_ext(output))
+  obj[["fmt"]] <- switch(
+    obj[["output"]], none = obj[["output"]], tools::file_ext(obj[["output"]])
+  )
 
   error_if(
     !obj[["fmt"]] %in% c("none", names(fmts)), "Format not supported",
     "not_supported"
   )
+
+  obj[["output"]] <- tools::file_path_sans_ext(obj[["output"]])
 
   obj
 
@@ -509,8 +512,6 @@ write_file <- function(obj) {
 
   attr(out, "output") <- obj[["output"]]
 
-  attr(out, "layer") <- obj[["layer"]]
-
   attr(out, "n_rows") <- obj[["n_rows"]]
 
   attr(out, "geo_types") <- obj[["geo_types"]]
@@ -522,7 +523,7 @@ write_file <- function(obj) {
 #' @noRd
 write_rds_file <- function(obj) {
 
-  saveRDS(obj[["data"]], file = obj[["output"]])
+  saveRDS(obj[["data"]], file = paste(obj[["output"]], obj[["fmt"]], sep = "."))
 
   obj
 
@@ -530,28 +531,17 @@ write_rds_file <- function(obj) {
 
 #' @noRd
 #' @importFrom sf st_write
-#' @importFrom tools file_path_sans_ext
 write_shp_file <- function(obj) {
 
   obj <- split_data_by_gtype(obj)
-
-  if (length(obj[["data"]]) > 1L) {
-
-    obj[["geo_types"]] <- sub("^multi", "", tolower(names(obj[["data"]])))
-
-    obj[["output"]] <- sprintf(
-      sub("\\.shp$", "_%s.shp", obj[["output"]]), obj[["geo_types"]]
-    )
-
-  }
-
-  obj[["layer"]] <- basename(tools::file_path_sans_ext(obj[["output"]]))
 
   for (i in seq_along(obj[["data"]])) {
 
     sf::st_write(
       obj[["data"]][[i]],
-      obj[["output"]][[i]],
+      sprintf(
+        "%s_%s.%s", obj[["output"]], obj[["geo_types"]][[i]], obj[["fmt"]]
+      ),
       layer_options = "ENCODING=UTF-8",
       quiet = TRUE
     )
@@ -564,33 +554,18 @@ write_shp_file <- function(obj) {
 
 #' @noRd
 #' @importFrom sf st_write
-#' @importFrom tools file_path_sans_ext
 write_gdal_file <- function(obj) {
 
   obj <- split_data_by_gtype(obj)
-
-  sep <- ""
-
-  gtypes_out <- ""
-
-  if (length(obj[["data"]]) > 1L) {
-
-    sep <- "_"
-
-    gtypes_out <- sub("^multi", "", tolower(names(obj[["data"]])))
-
-  }
-
-  obj[["layer"]] <- gsub(
-    "\\.", "_", basename(tools::file_path_sans_ext(obj[["output"]]))
-  )
 
   for (i in seq_along(obj[["data"]])) {
 
     sf::st_write(
       obj[["data"]][[i]],
-      obj[["output"]],
-      layer = paste(obj[["layer"]], gtypes_out[[i]], sep = sep),
+      paste(obj[["output"]], obj[["fmt"]], sep = "."),
+      layer = paste(
+        basename(obj[["output"]]), obj[["geo_types"]][[i]], sep = '_'
+      ),
       quiet = TRUE
     )
 
@@ -605,9 +580,9 @@ split_data_by_gtype <- function(obj) {
 
   geo_types <- geometry_type_chr(obj[["data"]])
 
-  unique_geo_types <- unique(geo_types)
+  obj[["geo_types"]] <- unique(geo_types)
 
-  shp_incompatible <- anyNA(match(unique_geo_types, shp_fmt_types))
+  shp_incompatible <- anyNA(match(obj[["geo_types"]], shp_fmt_types))
 
   error_if(
     shp_incompatible && identical(obj[["fmt"]], "shp"),
@@ -617,15 +592,15 @@ split_data_by_gtype <- function(obj) {
 
   data <- list()
 
-  for (i in unique_geo_types) {
+  for (i in obj[["geo_types"]]) {
 
     data[[i]] <- obj[["data"]][geo_types == i, ]
 
   }
 
-  obj[["data"]] <- data
+  obj[["geo_types"]] <- sub("^multi", "", tolower(obj[["geo_types"]]))
 
-  obj[["geo_types"]] <- ""
+  obj[["data"]] <- data
 
   obj
 
