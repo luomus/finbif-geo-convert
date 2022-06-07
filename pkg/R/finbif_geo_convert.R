@@ -405,11 +405,11 @@ to_footprint <- function(obj) {
       obj[["data"]][[footprint]], cast_to_multi
     )
 
-  }
+    obj[["data"]][[footprint]] <- sf::st_as_sfc(
+      obj[["data"]][[footprint]], crs = 4326L
+    )
 
-  obj[["data"]][[footprint]] <- sf::st_as_sfc(
-    obj[["data"]][[footprint]], crs = 4326L
-  )
+  }
 
   obj
 
