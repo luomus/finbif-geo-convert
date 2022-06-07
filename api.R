@@ -205,11 +205,32 @@ function(
 
             } else {
 
-              for (i in seq_along(attr(data, "geo_types"))) {
+              if (!identical(fmt, "shp")) {
 
-                args <- switch(
-                  fmt,
-                  shp = list(
+                error_code <- system2(
+                  "ogr2ogr",
+                  c(
+                    "-f", fmt_name, "-update", "-append", output_file_init,
+                    output_file
+                  ),
+                  stdout = FALSE,
+                  stderr = FALSE
+                )
+
+                if (!identical(error_code, 0L)) {
+
+                  stop(
+                    "Could not combine files; err_name: combine_failed",
+                    call. = FALSE
+                  )
+
+                }
+
+              } else {
+
+                for (i in seq_along(attr(data, "geo_types"))) {
+
+                  args <- list(
                     file = sprintf(
                       "%s/%s_%s.%s", id, basename(attr(data, "output")),
                       attr(data, "geo_types")[[i]], fmt
@@ -218,57 +239,51 @@ function(
                       "%s/%s/%s_%s.%s", id, acc[[length(acc)]],
                       basename(attr(data, "output")),
                       attr(data, "geo_types")[[i]], fmt
+                    ),
+                    layer <- sprintf(
+                      "%s_%s", basename(attr(data, "output")),
+                      attr(data, "geo_types")[[i]]
                     )
-                  ),
-                  list(
-                    file = output_file_init,
-                    add_file = output_file
-                  )
-                )
-
-                args[["layer"]] <- sprintf(
-                  "%s_%s", basename(attr(data, "output")),
-                  attr(data, "geo_types")[[i]]
-                )
-
-                cond <- attr(data, "geo_types")[[i]] %in% geo_types_combined
-
-                if (cond || !identical(fmt, "shp")) {
-
-                  error_code <- system2(
-                    "ogr2ogr",
-                    c(
-                      "-f", fmt_name, "-update", "-append", args[["file"]],
-                      args[["add_file"]], "-nln", args[["layer"]]
-                    ),
-                    stdout = FALSE,
-                    stderr = FALSE
                   )
 
-                } else {
+                  if (attr(data, "geo_types")[[i]] %in% geo_types_combined) {
 
-                  error_code <- system2(
-                    "ogr2ogr",
-                    c(
-                      "-f", fmt_name, args[["file"]], args[["add_file"]],
-                      "-nln", args[["layer"]]
-                    ),
-                    stdout = FALSE,
-                    stderr = FALSE
-                  )
+                    error_code <- system2(
+                      "ogr2ogr",
+                      c(
+                        "-f", fmt_name, "-update", "-append", args[["file"]],
+                        args[["add_file"]], "-nln", args[["layer"]]
+                      ),
+                      stdout = FALSE,
+                      stderr = FALSE
+                    )
 
-                  geo_types_combined <- c(
-                    geo_types_combined, attr(data, "geo_types")[[i]]
-                  )
+                  } else {
 
-                }
+                    error_code <- system2(
+                      "ogr2ogr",
+                      c(
+                        "-f", fmt_name, args[["file"]], args[["add_file"]],
+                        "-nln", args[["layer"]]
+                      ),
+                      stdout = FALSE,
+                      stderr = FALSE
+                    )
 
-                if (!identical(error_code, 0L)) {
+                    geo_types_combined <- c(
+                      geo_types_combined, attr(data, "geo_types")[[i]]
+                    )
 
-                  stop(
-                    "Could not combine files; err_name: combine_failed",
-                    call. = FALSE
-                  )
+                  }
+
+                  if (!identical(error_code, 0L)) {
+
+                    stop(
+                      "Could not combine files; err_name: combine_failed",
+                      call. = FALSE
+                    )
+
+                  }
 
                 }
 
