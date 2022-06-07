@@ -240,7 +240,7 @@ function(
                       basename(attr(data, "output")),
                       attr(data, "geo_types")[[i]], fmt
                     ),
-                    layer <- sprintf(
+                    layer = sprintf(
                       "%s_%s", basename(attr(data, "output")),
                       attr(data, "geo_types")[[i]]
                     )
