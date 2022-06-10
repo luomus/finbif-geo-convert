@@ -568,7 +568,9 @@ write_gdal_file <- function(obj) {
       obj[["data"]][[i]],
       paste(obj[["output"]], obj[["fmt"]], sep = "."),
       layer = paste(
-        basename(obj[["output"]]), obj[["geo_types"]][[i]], sep = '_'
+        gsub("\\.", "_", basename(obj[["output"]])),
+        obj[["geo_types"]][[i]],
+        sep = '_'
       ),
       quiet = TRUE
     )
