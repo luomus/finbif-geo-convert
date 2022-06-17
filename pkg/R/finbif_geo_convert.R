@@ -261,17 +261,34 @@ footprint <- function(obj) {
 
     if (obj[["has_points"]]) {
 
-      missing_footprints <- sf::st_is_empty(obj[["data"]][[footprint]])
+      sub_footprints <- sf::st_is_empty(obj[["data"]][[footprint]])
 
-      if (any(missing_footprints)) {
+      sub_footprints <- union(which(sub_footprints), obj[["is_point"]])
 
-        sub_footprints <- obj[["data"]][[footprint]][missing_footprints]
+      sub_footprints <- intersect(
+        which(!is.na(obj[["data"]][lon])), sub_footprints
+      )
 
-        if (any(!is.na(sub_footprints))) {
+      sub_footprints <- intersect(
+        which(!is.na(obj[["data"]][lat])), sub_footprints
+      )
 
-          obj[["data"]][[footprint]][missing_footprints] <- sub_footprints
+      if (length(sub_footprints) > 1L) {
 
-        }
+        point_footprints <- dplyr::rowwise(
+          obj[["data"]][sub_footprints, c(lon, lat)]
+        )
+
+        point_footprints <- dplyr::mutate(
+          point_footprints,
+          pnt = list(
+            sf::st_multipoint(matrix(c(.data[[lon]], .data[[lat]]), 1L, 2L))
+          )
+        )
+
+        point_footprints <- dplyr::ungroup(point_footprints)
+
+        obj[["data"]][[footprint]][sub_footprints] <- point_footprints[["pnt"]]
 
       }
 
@@ -385,7 +402,11 @@ to_footprint <- function(obj) {
     obj[["data"]][[footprint]], crs = 4326L
   )
 
-  gc <- geometry_type_chr(obj[["data"]][[footprint]]) == "GEOMETRYCOLLECTION"
+  geometries <- geometry_type_chr(obj[["data"]][[footprint]])
+
+  obj[["is_point"]] <- which(geometries == "POINT")
+
+  gc <-  geometries == "GEOMETRYCOLLECTION"
 
   if (identical(obj[["geo"]], "footprint") && any(gc)) {
 
