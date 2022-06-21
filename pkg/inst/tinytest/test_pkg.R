@@ -16,7 +16,11 @@ expect_inherits(api(file = "~/api.R"), "Plumber")
 
 expect_inherits(fgc:::pre(), "numeric")
 
-expect_null(fgc:::post(c(PATH_INFO = "/healthz"), c(status = 400)))
+expect_null(
+  fgc:::post(
+    c(PATH_INFO = "/healthz", HTTP_USER_AGENT = "Zabbix"), c(status = 400)
+  )
+)
 
 expect_null(
   fgc:::post(
