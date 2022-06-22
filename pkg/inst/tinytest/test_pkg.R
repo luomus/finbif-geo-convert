@@ -16,7 +16,11 @@ expect_inherits(api(file = "~/api.R"), "Plumber")
 
 expect_inherits(fgc:::pre(), "numeric")
 
-expect_null(fgc:::post(c(PATH_INFO = "/healthz"), c(status = 400)))
+expect_null(
+  fgc:::post(
+    c(PATH_INFO = "/healthz", HTTP_USER_AGENT = "Zabbix"), c(status = 400)
+  )
+)
 
 expect_null(
   fgc:::post(
@@ -48,7 +52,7 @@ finbif_geo_convert("HBF.53254.zip", "HBF.53254.rds")
 
 expect_inherits(readRDS("HBF.53254.rds"), "sf")
 
-finbif_geo_convert("HBF.53254.zip", "HBF.53254.gpkg")
+finbif_geo_convert("HBF.53254.zip", "HBF.53254.gpkg", geo = "footprint")
 
 expect_inherits(sf::st_read("HBF.53254.gpkg"), "sf")
 
@@ -73,7 +77,7 @@ suppressWarnings(
 )
 
 expect_inherits(
-  sf::st_read("HBF.55685_multilinestring.shp", quiet = TRUE), "sf"
+  sf::st_read("HBF.55685_linestring.shp", quiet = TRUE), "sf"
 )
 
 unlink(
@@ -83,10 +87,7 @@ unlink(
     "HBF.55685_polygon.dbf", "HBF.55685_polygon.prj", "HBF.55685_polygon.shp",
     "HBF.53254_polygon.shx", "HBF.55685_linestring.cpg",
     "HBF.55685_linestring.dbf", "HBF.55685_linestring.prj",
-    "HBF.55685_linestring.shp", "HBF.53254_linestring.shx",
-    "HBF.55685_multilinestring.cpg", "HBF.55685_multilinestring.dbf",
-    "HBF.55685_multilinestring.prj", "HBF.55685_multilinestring.shp",
-    "HBF.55685_multilinestring.shx"
+    "HBF.55685_linestring.shp", "HBF.53254_linestring.shx"
   )
 )
 

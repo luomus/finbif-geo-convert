@@ -40,6 +40,7 @@ if (identical(Sys.getenv("BRANCH"), "dev")) {
   assignInNamespace(
     "lite_download_file_vars", finbif:::lite_download_file_vars_test, "finbif"
   )
+  assignInNamespace("cite_file_vars", finbif:::cite_file_vars_test, "finbif")
 
 }
 

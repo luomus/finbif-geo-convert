@@ -48,6 +48,12 @@ post <- function(req, res) {
 
   }
 
+  if (identical(req[["HTTP_USER_AGENT"]], "Zabbix")) {
+
+    log_fn <- log_null
+
+  }
+
   log_fn(
     paste0(
       '{convert_empty(req$REMOTE_ADDR)} ',

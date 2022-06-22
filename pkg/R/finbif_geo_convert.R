@@ -56,16 +56,19 @@ finbif_geo_convert <- function(
 
 #' @noRd
 #' @importFrom tools file_ext
+#' @importFrom tools file_path_sans_ext
 get_fmt <- function(obj) {
 
-  output <- obj[["output"]]
-
-  obj[["fmt"]] <- switch(output, none = output, tools::file_ext(output))
+  obj[["fmt"]] <- switch(
+    obj[["output"]], none = obj[["output"]], tools::file_ext(obj[["output"]])
+  )
 
   error_if(
     !obj[["fmt"]] %in% c("none", names(fmts)), "Format not supported",
     "not_supported"
   )
+
+  obj[["output"]] <- tools::file_path_sans_ext(obj[["output"]])
 
   obj
 
@@ -258,17 +261,34 @@ footprint <- function(obj) {
 
     if (obj[["has_points"]]) {
 
-      missing_footprints <- sf::st_is_empty(obj[["data"]][[footprint]])
+      sub_footprints <- sf::st_is_empty(obj[["data"]][[footprint]])
 
-      if (any(missing_footprints)) {
+      sub_footprints <- union(which(sub_footprints), obj[["is_point"]])
 
-        sub_footprints <- obj[["data"]][[footprint]][missing_footprints]
+      sub_footprints <- intersect(
+        which(!is.na(obj[["data"]][lon])), sub_footprints
+      )
 
-        if (any(!is.na(sub_footprints))) {
+      sub_footprints <- intersect(
+        which(!is.na(obj[["data"]][lat])), sub_footprints
+      )
 
-          obj[["data"]][[footprint]][missing_footprints] <- sub_footprints
+      if (length(sub_footprints) > 1L) {
 
-        }
+        point_footprints <- dplyr::rowwise(
+          obj[["data"]][sub_footprints, c(lon, lat)]
+        )
+
+        point_footprints <- dplyr::mutate(
+          point_footprints,
+          pnt = list(
+            sf::st_multipoint(matrix(c(.data[[lon]], .data[[lat]]), 1L, 2L))
+          )
+        )
+
+        point_footprints <- dplyr::ungroup(point_footprints)
+
+        obj[["data"]][[footprint]][sub_footprints] <- point_footprints[["pnt"]]
 
       }
 
@@ -382,7 +402,11 @@ to_footprint <- function(obj) {
     obj[["data"]][[footprint]], crs = 4326L
   )
 
-  gc <- geometry_type_chr(obj[["data"]][[footprint]]) == "GEOMETRYCOLLECTION"
+  geometries <- geometry_type_chr(obj[["data"]][[footprint]])
+
+  obj[["is_point"]] <- which(geometries == "POINT")
+
+  gc <-  geometries == "GEOMETRYCOLLECTION"
 
   if (identical(obj[["geo"]], "footprint") && any(gc)) {
 
@@ -393,6 +417,18 @@ to_footprint <- function(obj) {
     uncollected <- sf::st_as_sfc(uncollected, crs = 3067L)
 
     obj[["data"]][[footprint]][gc] <- sf::st_transform(uncollected, crs = 4326L)
+
+  }
+
+  if (identical(obj[["geo"]], "footprint")) {
+
+    obj[["data"]][[footprint]] <- lapply(
+      obj[["data"]][[footprint]], cast_to_multi
+    )
+
+    obj[["data"]][[footprint]] <- sf::st_as_sfc(
+      obj[["data"]][[footprint]], crs = 4326L
+    )
 
   }
 
@@ -429,6 +465,22 @@ uncollect <- function(x) {
       x <- sf::st_multipolygon(x)
 
     }
+
+  }
+
+  x
+
+}
+
+#' @noRd
+#' @importFrom sf st_cast
+cast_to_multi <- function(x) {
+
+  gtype <- geometry_type_chr(x)
+
+  if (!grepl("MULTI", gtype)) {
+
+    x <- sf::st_cast(x, paste0("MULTI", gtype))
 
   }
 
@@ -485,8 +537,6 @@ write_file <- function(obj) {
 
   attr(out, "output") <- obj[["output"]]
 
-  attr(out, "layer") <- obj[["layer"]]
-
   attr(out, "n_rows") <- obj[["n_rows"]]
 
   attr(out, "geo_types") <- obj[["geo_types"]]
@@ -498,7 +548,7 @@ write_file <- function(obj) {
 #' @noRd
 write_rds_file <- function(obj) {
 
-  saveRDS(obj[["data"]], file = obj[["output"]])
+  saveRDS(obj[["data"]], file = paste(obj[["output"]], obj[["fmt"]], sep = "."))
 
   obj
 
@@ -508,42 +558,16 @@ write_rds_file <- function(obj) {
 #' @importFrom sf st_write
 write_shp_file <- function(obj) {
 
-  geo_types <- geometry_type_chr(obj[["data"]])
+  obj <- split_data_by_gtype(obj)
 
-  unique_geo_types <- unique(geo_types)
-
-  error_if(
-    anyNA(match(unique_geo_types, shp_fmt_types)),
-    "Geometry too complex for '.shp' file. Please select another format.",
-    "too_complex"
-  )
-
-  data <- list()
-
-  for (i in unique_geo_types) {
-
-    data[[i]] <- obj[["data"]][geo_types == i, ]
-
-  }
-
-  obj[["geo_types"]] <- ""
-
-  if (length(data) > 1L) {
-
-    obj[["geo_types"]] <- tolower(unique_geo_types)
-
-    obj[["output"]] <- sprintf(
-      gsub("\\.shp$", "_%s.shp", obj[["output"]]), obj[["geo_types"]]
-    )
-
-  }
-
-  obj[["layer"]] <- basename(tools::file_path_sans_ext(obj[["output"]]))
-
-  for (i in seq_along(data)) {
+  for (i in seq_along(obj[["data"]])) {
 
     sf::st_write(
-      data[[i]], obj[["output"]][[i]], layer_options = "ENCODING=UTF-8",
+      obj[["data"]][[i]],
+      sprintf(
+        "%s_%s.%s", obj[["output"]], obj[["geo_types"]][[i]], obj[["fmt"]]
+      ),
+      layer_options = "ENCODING=UTF-8",
       quiet = TRUE
     )
 
@@ -555,21 +579,55 @@ write_shp_file <- function(obj) {
 
 #' @noRd
 #' @importFrom sf st_write
-#' @importFrom tools file_path_sans_ext
 write_gdal_file <- function(obj) {
 
-  obj[["geo_types"]] <- ""
+  obj <- split_data_by_gtype(obj)
 
-  obj[["layer"]] <- gsub(
-    "\\.", "_", basename(tools::file_path_sans_ext(obj[["output"]]))
+  for (i in seq_along(obj[["data"]])) {
+
+    sf::st_write(
+      obj[["data"]][[i]],
+      paste(obj[["output"]], obj[["fmt"]], sep = "."),
+      layer = paste(
+        gsub("\\.", "_", basename(obj[["output"]])),
+        obj[["geo_types"]][[i]],
+        sep = '_'
+      ),
+      quiet = TRUE
+    )
+
+  }
+
+  obj
+
+}
+
+#' @noRd
+split_data_by_gtype <- function(obj) {
+
+  geo_types <- geometry_type_chr(obj[["data"]])
+
+  obj[["geo_types"]] <- unique(geo_types)
+
+  shp_incompatible <- anyNA(match(obj[["geo_types"]], shp_fmt_types))
+
+  error_if(
+    shp_incompatible && identical(obj[["fmt"]], "shp"),
+    "Geometry too complex for '.shp' file. Please select another format.",
+    "too_complex"
   )
 
-  sf::st_write(
-    obj[["data"]],
-    obj[["output"]],
-    layer = obj[["layer"]],
-    quiet = TRUE
-  )
+  data <- list()
+
+  for (i in obj[["geo_types"]]) {
+
+    data[[i]] <- obj[["data"]][geo_types == i, ]
+
+  }
+
+  obj[["geo_types"]] <- sub("^multi", "", tolower(obj[["geo_types"]]))
+
+  obj[["data"]] <- data
 
   obj
 
