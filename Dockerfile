@@ -1,5 +1,5 @@
 ## Modified from https://github.com/rocker-org/rocker-versioned2/blob/caff65d9b31327e0662633860c54ae2cc28bc60f/dockerfiles/Dockerfile_r-ver_4.1.0
-FROM ubuntu:jammy-20220531
+FROM ubuntu@sha256:bace9fb0d5923a675c894d5c815da75ffe35e24970166a48a4460a48ae6e0d19
 
 ENV R_VERSION=4.2.1
 ENV TERM=xterm
