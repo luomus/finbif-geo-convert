@@ -1,7 +1,7 @@
 ## Modified from https://github.com/rocker-org/rocker-versioned2/blob/caff65d9b31327e0662633860c54ae2cc28bc60f/dockerfiles/Dockerfile_r-ver_4.1.0
 FROM ubuntu:20.04
 
-ENV R_VERSION=4.2.0
+ENV R_VERSION=4.2.1
 ENV TERM=xterm
 ENV LC_ALL=en_US.UTF-8
 ENV LANG=en_US.UTF-8
@@ -70,7 +70,7 @@ RUN install2.r -e \
       withr \
       wk
 
-RUN installGithub.r r-spatial/sf luomus/finbif@4fb33ed1
+RUN installGithub.r r-spatial/sf luomus/finbif@518ae7d8
 
 HEALTHCHECK --interval=1m --timeout=10s \
   CMD curl -sfI -o /dev/null 0.0.0.0:8000/healthz || exit 1
