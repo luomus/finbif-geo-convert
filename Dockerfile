@@ -1,12 +1,12 @@
 ## Modified from https://github.com/rocker-org/rocker-versioned2/blob/caff65d9b31327e0662633860c54ae2cc28bc60f/dockerfiles/Dockerfile_r-ver_4.1.0
-FROM ubuntu:22.04
+FROM ubuntu:20.04
 
 ENV R_VERSION=4.2.2
 ENV TERM=xterm
 ENV LC_ALL=en_US.UTF-8
 ENV LANG=en_US.UTF-8
 ENV R_HOME=/usr/local/lib/R
-ENV CRAN=https://packagemanager.rstudio.com/all/__linux__/jammy/latest
+ENV CRAN=https://packagemanager.rstudio.com/all/__linux__/focal/latest
 ENV TZ=Etc/UTC
 
 COPY install_R.sh install_R.sh
