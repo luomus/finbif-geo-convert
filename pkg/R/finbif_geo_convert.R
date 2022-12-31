@@ -378,7 +378,7 @@ buffer <- function(obj) {
 }
 
 #' @noRd
-#' @importFrom sf st_as_sfc st_geometry_type st_transform
+#' @importFrom sf st_as_sfc st_geometry_type st_make_valid st_transform
 #' @importFrom stringi stri_replace_na
 to_footprint <- function(obj) {
 
@@ -421,6 +421,10 @@ to_footprint <- function(obj) {
   }
 
   if (identical(obj[["geo"]], "footprint")) {
+
+    obj[["data"]][[footprint]] <- lapply(
+      obj[["data"]][[footprint]], sf::st_make_valid
+    )
 
     obj[["data"]][[footprint]] <- lapply(
       obj[["data"]][[footprint]], cast_to_multi
