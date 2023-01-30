@@ -178,7 +178,9 @@ function(
           input_name <- gsub("\\.", "_", input[["name"]])
 
           output_file_init <- paste0(id, "/", input_name, "_geo.", fmt)
+
           output_file <- output_file_init
+
           skip <- 0L
           n <- as.integer(Sys.getenv("MAX_CHUNK_SIZE", "1e5"))
           data <- list()
@@ -353,7 +355,7 @@ function(
         )
 
         zip(
-          paste0(output_file_init, ".zip"),
+          paste0(gsub("\\.", "_", output_file_init), ".zip"),
           setdiff(
             list.files(id, full.names = TRUE),
             c(input_file, orig_path, additional_files, progress_file)
@@ -413,7 +415,7 @@ function(id, timeout = 30L, res) {
       while (length(status) < 1L) {
 
         status <- list.files(
-          gsub("\\.", "_", id), pattern = "_geo\\..*\\.zip$"
+          gsub("\\.", "_", id), pattern = "_geo_.*\\.zip$"
         )
 
         timer <- timer + sleep
@@ -498,7 +500,7 @@ function(id, res) {
   }
 
   zip <- list.files(
-    gsub("\\.", "_", id), pattern = "_geo\\..*\\.zip$", full.names = TRUE
+    gsub("\\.", "_", id), pattern = "_geo_.*\\.zip$", full.names = TRUE
   )
 
   out <- readBin(zip, "raw", n = file.info(zip)$size)
