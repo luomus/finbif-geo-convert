@@ -355,7 +355,7 @@ function(
         )
 
         zip(
-          paste0(gsub("\\.", "_", output_file_init), ".zip"),
+          paste0(id, "/", input_name, "_geo_", fmt, ".zip"),
           setdiff(
             list.files(id, full.names = TRUE),
             c(input_file, orig_path, additional_files, progress_file)
