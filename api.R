@@ -412,7 +412,9 @@ function(id, timeout = 30L, res) {
 
       while (length(status) < 1L) {
 
-        status <- list.files(id, pattern = "\\.geo\\..*\\.zip$")
+        status <- list.files(
+          gsub("\\.", "_", id), pattern = "_geo\\..*\\.zip$"
+        )
 
         timer <- timer + sleep
 
@@ -495,7 +497,9 @@ function(id, res) {
 
   }
 
-  zip <- list.files(id, pattern = "\\.geo\\..*\\.zip$", full.names = TRUE)
+  zip <- list.files(
+    gsub("\\.", "_", id), pattern = "_geo\\..*\\.zip$", full.names = TRUE
+  )
 
   out <- readBin(zip, "raw", n = file.info(zip)$size)
 
