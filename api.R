@@ -175,7 +175,9 @@ function(
       res <- try(
         {
 
-          output_file_init <- paste0(id, "/", input[["name"]], ".geo.", fmt)
+          input_name <- gsub("\\.", "_", input[["name"]])
+
+          output_file_init <- paste0(id, "/", input_name, "_geo.", fmt)
           output_file <- output_file_init
           skip <- 0L
           n <- as.integer(Sys.getenv("MAX_CHUNK_SIZE", "1e5"))
@@ -300,7 +302,7 @@ function(
             dir.create(file.path(id, next_file))
 
             output_file <- paste0(
-              id, "/", next_file, "/", input[["name"]], ".geo.", fmt
+              id, "/", next_file, "/", input_name, "_geo.", fmt
             )
 
           }
