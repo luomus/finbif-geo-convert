@@ -36,8 +36,6 @@ finbif_geo_convert <- function(
 
   obj <- sanitise_nms(obj)
 
-  obj <- lgl2int(obj)
-
   obj <- get_spatial_input_nms(obj)
 
   obj <- points(obj)
@@ -110,17 +108,6 @@ sanitise_nms <- function(obj) {
     )
 
   }
-
-  obj
-
-}
-
-#' @noRd
-lgl2int <- function(obj) {
-
-  lgl_cols <- vapply(obj[["data"]], is.logical, NA)
-
-  obj[["data"]][, lgl_cols] <- lapply(obj[["data"]][, lgl_cols], as.integer)
 
   obj
 
