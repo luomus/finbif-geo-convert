@@ -108,7 +108,7 @@ AWK=/usr/bin/awk \
 CFLAGS="-g -O2 -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g" \
 CXXFLAGS="-g -O2 -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2 -g" \
 ./configure --enable-R-shlib \
-		   --enable-memory-profiling \
+		   --disable-memory-profiling \
 		   --with-readline \
 		   --with-blas \
 		   --with-lapack \
