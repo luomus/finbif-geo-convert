@@ -461,6 +461,16 @@ uncollect <- function(x) {
 
       x[] <- lapply(x, lapply, round)
 
+      x <- sf::st_make_valid(x)
+
+      if (identical(geometry_type_chr(x), "GEOMETRYCOLLECTION")) {
+
+        x <- lapply(x, to_polygon)
+
+        x <- sf::st_multipolygon(x)
+
+      }
+
     }
 
   }
