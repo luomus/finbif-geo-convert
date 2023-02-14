@@ -429,7 +429,7 @@ to_footprint <- function(obj) {
 
 #' @noRd
 #' @importFrom sf st_multilinestring st_multipoint st_multipolygon
-uncollect <- function(x) {
+uncollect <- function(x, digits = 1L) {
 
   gtype <- geometry_type_chr(x)
 
@@ -459,7 +459,7 @@ uncollect <- function(x) {
 
     if (identical(geometry_type_chr(x), "MULTIPOLYGON")) {
 
-      x[] <- lapply(x, lapply, round)
+      x[] <- lapply(x, lapply, round, digits)
 
       x <- sf::st_make_valid(x)
 
@@ -503,7 +503,7 @@ to_polygon <- function(x) {
 
   if (geometry_type_chr(x) %in% geometries) {
 
-    x <- sf::st_buffer(x, 5, 1L)
+    x <- sf::st_buffer(x, .5, 1L)
 
   }
 

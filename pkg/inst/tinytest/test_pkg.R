@@ -129,7 +129,8 @@ mpol <- fgc:::uncollect(
         )
       )
     )
-  )
+  ),
+  digits = 0L
 )
 
 expect_inherits(mpol, "MULTIPOLYGON")
