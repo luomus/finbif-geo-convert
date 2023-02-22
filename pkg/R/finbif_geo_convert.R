@@ -429,7 +429,7 @@ to_footprint <- function(obj) {
 
 #' @noRd
 #' @importFrom sf st_multilinestring st_multipoint st_multipolygon
-uncollect <- function(x, digits = 1L) {
+uncollect <- function(x, digits = 0L) {
 
   gtype <- geometry_type_chr(x)
 
