@@ -141,7 +141,7 @@ gc <- fgc:::uncollect(
   )
 )
 
-expect_inherits(gc, "POLYGON")
+expect_inherits(gc, "LINESTRING")
 
 tri <- fgc:::uncollect(
   sf::st_geometrycollection(sf::st_as_sfc("TRIANGLE ((0 0, 0 1, 1 0, 0 0))"))
