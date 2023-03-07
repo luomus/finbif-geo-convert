@@ -453,7 +453,7 @@ uncollect <- function(x, digits = 0L) {
 
       x <- lapply(x, to_polygon)
 
-      x <- sf::st_multipolygon(x)
+      x <- do.call(c, x)
 
     }
 
@@ -467,7 +467,7 @@ uncollect <- function(x, digits = 0L) {
 
         x <- lapply(x, to_polygon)
 
-        x <- sf::st_multipolygon(x)
+        x <- do.call(c, x)
 
       }
 
@@ -496,18 +496,46 @@ cast_to_multi <- function(x) {
 }
 
 #' @noRd
-#' @importFrom sf st_buffer
+#' @noRd
+#' @importFrom sf st_buffer st_multipolygon
 to_polygon <- function(x) {
 
-  geometries <- c("LINESTRING", "POINT", "MULTILINESTRING", "MULTIPOINT")
+  g <- geometry_type_chr(x)
 
-  if (geometry_type_chr(x) %in% geometries) {
+  if (g %in% c("LINESTRING", "MULTILINESTRING")) {
 
     x <- sf::st_buffer(x, .5, 1L)
 
   }
 
+  if (g %in% c("POINT", "MULTIPOINT")) {
+
+    x <- sf::st_multipolygon(
+      list(apply(rbind(x[]), 1, point2poly, simplify = FALSE))
+    )
+
+  }
+
   x
+
+}
+
+#'@noRd
+
+point2poly <- function(x) {
+
+  sweep(
+    rbind(
+      c(-.5, -.5),
+      c(.5,  -.5),
+      c(.5, .5),
+      c(-.5, .5),
+      c(-.5, -.5)
+    ),
+    2,
+    x,
+    "+"
+  )
 
 }
 
