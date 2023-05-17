@@ -1,7 +1,7 @@
 ## Modified from https://github.com/rocker-org/rocker-versioned2/blob/caff65d9b31327e0662633860c54ae2cc28bc60f/dockerfiles/Dockerfile_r-ver_4.1.0
 FROM ubuntu:20.04@sha256:0e0402cd13f68137edb0266e1d2c682f217814420f2d43d300ed8f65479b14fb
 
-ENV R_VERSION=4.2.2
+ENV R_VERSION=4.3.0
 ENV TERM=xterm
 ENV LC_ALL=en_US.UTF-8
 ENV LANG=en_US.UTF-8
@@ -71,7 +71,7 @@ RUN install2.r -e \
       withr \
       wk
 
-RUN installGithub.r r-spatial/sf luomus/finbif@d1b7faff
+RUN installGithub.r r-spatial/sf luomus/finbif@5858b656
 
 HEALTHCHECK --interval=1m --timeout=10s \
   CMD curl -sfI -o /dev/null 0.0.0.0:8000/healthz || exit 1
@@ -79,6 +79,7 @@ HEALTHCHECK --interval=1m --timeout=10s \
 ENV HOME /home/user
 ENV OPENBLAS_NUM_THREADS 1
 ENV OMP_THREAD_LIMIT 1
+ENV FINBIF_USE_PRIVATE_API true
 
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY convert.r /usr/local/bin/convert
