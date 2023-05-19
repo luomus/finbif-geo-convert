@@ -34,14 +34,6 @@ if (identical(Sys.getenv("BRANCH"), "dev")) {
 
   options(finbif_dl_url = "https://staging.laji.fi/laji-etl/download")
 
-  assignInNamespace("var_names", finbif:::var_names_test, "finbif")
-  assignInNamespace("filter_names", finbif:::filter_names_test, "finbif")
-  assignInNamespace("has_value", finbif:::has_value_test, "finbif")
-  assignInNamespace(
-    "lite_download_file_vars", finbif:::lite_download_file_vars_test, "finbif"
-  )
-  assignInNamespace("cite_file_vars", finbif:::cite_file_vars_test, "finbif")
-
 }
 
 log_file <- tempfile("plumber_", "logs", ".log")

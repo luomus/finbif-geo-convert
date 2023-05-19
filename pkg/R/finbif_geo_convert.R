@@ -36,8 +36,6 @@ finbif_geo_convert <- function(
 
   obj <- sanitise_nms(obj)
 
-  obj <- lgl2int(obj)
-
   obj <- get_spatial_input_nms(obj)
 
   obj <- points(obj)
@@ -110,17 +108,6 @@ sanitise_nms <- function(obj) {
     )
 
   }
-
-  obj
-
-}
-
-#' @noRd
-lgl2int <- function(obj) {
-
-  lgl_cols <- vapply(obj[["data"]], is.logical, NA)
-
-  obj[["data"]][, lgl_cols] <- lapply(obj[["data"]][, lgl_cols], as.integer)
 
   obj
 
@@ -442,7 +429,7 @@ to_footprint <- function(obj) {
 
 #' @noRd
 #' @importFrom sf st_multilinestring st_multipoint st_multipolygon
-uncollect <- function(x) {
+uncollect <- function(x, digits = 0L) {
 
   gtype <- geometry_type_chr(x)
 
@@ -466,7 +453,23 @@ uncollect <- function(x) {
 
       x <- lapply(x, to_polygon)
 
-      x <- sf::st_multipolygon(x)
+      x <- do.call(c, x)
+
+    }
+
+    if (identical(geometry_type_chr(x), "MULTIPOLYGON")) {
+
+      x[] <- lapply(x, lapply, round, digits)
+
+      x <- sf::st_make_valid(x)
+
+      if (identical(geometry_type_chr(x), "GEOMETRYCOLLECTION")) {
+
+        x <- lapply(x, to_polygon)
+
+        x <- do.call(c, x)
+
+      }
 
     }
 
@@ -493,18 +496,46 @@ cast_to_multi <- function(x) {
 }
 
 #' @noRd
-#' @importFrom sf st_buffer
+#' @noRd
+#' @importFrom sf st_buffer st_multipolygon
 to_polygon <- function(x) {
 
-  geometries <- c("LINESTRING", "POINT", "MULTILINESTRING", "MULTIPOINT")
+  g <- geometry_type_chr(x)
 
-  if (geometry_type_chr(x) %in% geometries) {
+  if (g %in% c("LINESTRING", "MULTILINESTRING")) {
 
     x <- sf::st_buffer(x, .5, 1L)
 
   }
 
+  if (g %in% c("POINT", "MULTIPOINT")) {
+
+    x <- sf::st_multipolygon(
+      list(apply(rbind(x[]), 1, point2poly, simplify = FALSE))
+    )
+
+  }
+
   x
+
+}
+
+#'@noRd
+
+point2poly <- function(x) {
+
+  sweep(
+    rbind(
+      c(-.5, -.5),
+      c(.5,  -.5),
+      c(.5, .5),
+      c(-.5, .5),
+      c(-.5, -.5)
+    ),
+    2,
+    x,
+    "+"
+  )
 
 }
 

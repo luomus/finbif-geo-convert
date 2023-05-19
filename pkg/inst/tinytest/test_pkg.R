@@ -101,8 +101,36 @@ expect_inherits(mpoi, "MULTIPOINT")
 
 mpol <- fgc:::uncollect(
   sf::st_geometrycollection(
-    list(sf::st_polygon(list(matrix(rep(0, 8), ncol = 2, byrow = TRUE))))
-  )
+    list(
+      sf::st_polygon(
+        list(
+          structure(
+            c(
+              407684.815871683, 407684.935511214, 407685.032740082,
+              407684.913100678, 407684.815871683, 7116299.29904113,
+              7116303.30934417, 7116303.30644354, 7116299.2961405,
+              7116299.29904113
+            ),
+            dim = c(5L, 2L)
+          )
+        )
+      ),
+      sf::st_polygon(
+        list(
+          structure(
+            c(
+              407732.770606645, 407751.053066859, 408304.664222537,
+              408286.491510638, 407732.770606645, 7116295.30436087,
+              7116908.43555739, 7116891.97707486, 7116278.84338128,
+              7116295.30436087
+            ),
+            dim = c(5L, 2L)
+          )
+        )
+      )
+    )
+  ),
+  digits = 0L
 )
 
 expect_inherits(mpol, "MULTIPOLYGON")
@@ -113,7 +141,7 @@ gc <- fgc:::uncollect(
   )
 )
 
-expect_inherits(gc, "MULTIPOLYGON")
+expect_inherits(gc, "LINESTRING")
 
 tri <- fgc:::uncollect(
   sf::st_geometrycollection(sf::st_as_sfc("TRIANGLE ((0 0, 0 1, 1 0, 0 0))"))

@@ -1,7 +1,8 @@
 pkgs <- c(
   "callr",
   "withr",
-  "httr"
+  "httr",
+  "rapidoc"
 )
 
 for (pkg in pkgs) {
