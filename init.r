@@ -28,7 +28,12 @@ for (pkg in pkgs) {
 
 future::plan("multicore", workers = 20L)
 
-options(plumber.maxRequestSize = 1e8L)
+options(
+  finbif_rate_limit = Inf,
+  finbif_use_cache = FALSE,
+  finbif_use_cache_metadata = TRUE,
+  plumber.maxRequestSize = 1e8L
+)
 
 if (identical(Sys.getenv("BRANCH"), "dev")) {
 
