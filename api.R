@@ -6,6 +6,8 @@
 #* @apiTag convert Convert a FinBIF occurrence data file into a geographic data format
 #* @apiTag status Check status of API
 
+library(rapidoc)
+
 if (!dir.exists("logs/errors")) dir.create("logs/errors", recursive = TRUE)
 
 future::plan("multicore", workers = 20L)
