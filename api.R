@@ -6,6 +6,22 @@
 #* @apiTag convert Convert a FinBIF occurrence data file into a geographic data format
 #* @apiTag status Check status of API
 
+if (!dir.exists("logs/errors")) dir.create("logs/errors", recursive = TRUE)
+
+future::plan("multicore", workers = 20L)
+
+options(
+  finbif_rate_limit = Inf,
+  finbif_use_cache = FALSE,
+  finbif_use_cache_metadata = TRUE
+)
+
+if (identical(Sys.getenv("BRANCH"), "dev")) {
+
+  options(finbif_dl_url = "https://staging.laji.fi/laji-etl/download")
+
+}
+
 #* @filter cors
 cors <- function(req, res) {
 

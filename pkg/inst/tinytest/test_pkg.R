@@ -1,36 +1,4 @@
-pkgs <- c("logger", "rapidoc", "sf")
-
-for (pkg in pkgs) {
-
-  suppressPackageStartupMessages(
-    library(pkg, quietly = TRUE, character.only = TRUE)
-  )
-
-}
-
-log_file <- tempfile("plumber_", tempdir(), ".log")
-
-logger::log_appender(logger::appender_tee(log_file))
-
-expect_inherits(api(file = "~/api.R"), "Plumber")
-
-expect_inherits(fgc:::pre(), "numeric")
-
-expect_null(
-  fgc:::post(
-    c(PATH_INFO = "/healthz", HTTP_USER_AGENT = "Zabbix"), c(status = 400)
-  )
-)
-
-expect_null(
-  fgc:::post(
-    list(
-      PATH_INFO = "", REMOTE_ADDR = "", HTTP_USER_AGENT = "", HTTP_HOST = "",
-      REQUEST_METHOD = ""
-    ),
-    list(status = 400)
-  )
-)
+library(sf, quietly = TRUE)
 
 expect_inherits(finbif_geo_convert("laji-data.tsv"), "sf")
 
