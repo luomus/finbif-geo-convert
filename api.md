@@ -33,7 +33,6 @@ citable file's identifier as a path parameter.
 * Upload a data file for conversion 
 * Poll the status of a conversion
 * Download the converted file in a geographic format
-* See a list of supported output formats
 
 ### **Conversion Status & Automatic Redirection**
 
@@ -72,8 +71,8 @@ Get the converted file via redirection:
 $ curl -JLO https://fgc.rahtiapp.fi/HBF.53254/shp/point/wgs84
 ```
 
-Upload a lite download and get a GeoJSON file back:
+Upload a lite download and get a GeoPackage file back:
 
 ```bash
-$ curl -JLOF file=@laji-data.tsv https://fgc.rahtiapp.fi/test/geojson/point/ykj
+$ curl -JLOF file=@laji-data.tsv https://fgc.rahtiapp.fi/test/gpkg/point/wgs84
 ```
