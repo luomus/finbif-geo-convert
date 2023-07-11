@@ -1,4 +1,4 @@
-FROM ghcr.io/luomus/base-r-image@sha256:16b28b7ab08a1dc25dd0918f9e2993cb74d757e879d7284f81f891f80053bdc0
+FROM ghcr.io/luomus/base-r-image@sha256:b28f78a79dd9593323f5783c449a8060ddc0149d4a010002f25fef3f8e213a69
 
 ENV FINBIF_USER_AGENT=https://github.com/luomus/finbif-geo-convert
 ENV FINBIF_USE_PRIVATE_API=true
@@ -16,7 +16,5 @@ COPY R /home/user/R
 COPY tests /home/user/tests
 
 RUN R -e 'renv::restore()' \
- && R -e 'renv::install(".")' \
- && mkdir -p /home/user/logs /home/user/coverage \
- && chgrp -R 0 /home/user \
- && chmod -R g=u /home/user /etc/passwd
+ && R -e 'remotes::install_local(dependencies = FALSE, upgrade = FALSE)' \
+ && permissions.sh
