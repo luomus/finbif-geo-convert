@@ -1,18 +1,22 @@
-FROM ghcr.io/luomus/base-r-image@sha256:1284c451bd7c894bc77aa728087648562a9c10a203e688cf81a317aaa6f93de5
-
-COPY favicon.ico /home/user/favicon.ico
-COPY api.md /home/user/api.md
-COPY renv.lock /home/user/renv.lock
-COPY convert.r /usr/local/bin/convert
-COPY pkg /home/user/pkg
-COPY api.R /home/user/api.R
-
-RUN R -e "renv::restore()" \
- && sed -i 's/RapiDoc/finbif-geo-convert/g' \
-    `R --slave -e "cat(.libPaths()[[1]])"`/rapidoc/dist/index.html \
- && mkdir -p /home/user/logs /home/user/coverage \
- && chgrp -R 0 /home/user \
- && chmod -R g=u /home/user /etc/passwd
+FROM ghcr.io/luomus/base-r-image@sha256:16b28b7ab08a1dc25dd0918f9e2993cb74d757e879d7284f81f891f80053bdc0
 
 ENV FINBIF_USER_AGENT=https://github.com/luomus/finbif-geo-convert
 ENV FINBIF_USE_PRIVATE_API=true
+
+COPY renv.lock /home/user/renv.lock
+COPY favicon.ico /home/user/favicon.ico
+COPY api.R /home/user/api.R
+COPY api.md /home/user/api.md
+COPY logo.png /home/user/figures/logo.png
+COPY DESCRIPTION /home/user/DESCRIPTION
+COPY inst /home/user/inst
+COPY man /home/user/man
+COPY NAMESPACE /home/user/NAMESPACE
+COPY R /home/user/R
+COPY tests /home/user/tests
+
+RUN R -e 'renv::restore()' \
+ && R -e 'renv::install(".")' \
+ && mkdir -p /home/user/logs /home/user/coverage \
+ && chgrp -R 0 /home/user \
+ && chmod -R g=u /home/user /etc/passwd
