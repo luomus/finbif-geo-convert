@@ -1,6 +1,6 @@
 Package: fgc
 Title: FinBIF geographic data conversion
-Version: 0.2.4.9000
+Version: 0.3.0.9000
 Authors@R: c(
     person(given = "Finnish Museum of Natural History - Luomus",
            role = "cph"),
@@ -11,28 +11,20 @@ Authors@R: c(
            comment = c(ORCID = "0000-0002-8686-4154"))
     )
 Description: Convert FinBIF data into geographic formats.
-LazyData: true
 Depends: R (>= 3.5.0)
 Imports:
     dplyr,
     finbif,
-    logger,
-    plumber,
-    tictoc,
+    rlang,
     sf,
     stringi,
-    rlang,
     tools
 Suggests:
-    callr,
     digest,
     future,
-    httr,
     later,
-    rapidoc,
-    tinytest,
-    withr
-License: GPL-2
+    tinytest
+License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3

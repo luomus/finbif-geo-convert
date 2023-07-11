@@ -8,12 +8,12 @@
 #'   [https://tun.fi/HBF.53254](https://tun.fi/HBF.53254)) or an integer
 #'   representing the URI (i.e., `53254`).
 #' @param output Character. Output file format in the form of a file extension.
-#'   See `show_formats()` for a list of available file formats. Use `"none"`
-#'   (default) to prevent writing output to a file.
+#'   One of `"shp"` or `"gpkg". Use `"none"` (default) to prevent writing output
+#'   to a file.
 #' @param geo Character. Geometry of output. One of `"point"`, `"bbox"` or "
 #'   `"footprint"`.
 #' @param crs Character or Integer. Coordinate reference system of output. One
-#'   of `"euref"`, `"ykj"`, `"wgs84"` or integer indicating an EPSG code.
+#'   of `"euref"` or `"wgs84"`.
 #' @param ... Other options passed to `finbif::finbif_occurrence_load`.
 #'
 #' @return An `{sf}` package simple feature object (invisibly). And if
@@ -62,7 +62,8 @@ get_fmt <- function(obj) {
   )
 
   error_if(
-    !obj[["fmt"]] %in% c("none", names(fmts)), "Format not supported",
+    !obj[["fmt"]] %in% c("none", "shp", "gpkg"),
+    "Format not supported",
     "not_supported"
   )
 
@@ -563,7 +564,6 @@ write_file <- function(obj) {
   obj <- switch(
     obj[["fmt"]],
     none = obj,
-    rds = write_rds_file(obj),
     shp = write_shp_file(obj),
     write_gdal_file(obj)
   )
@@ -577,15 +577,6 @@ write_file <- function(obj) {
   attr(out, "geo_types") <- obj[["geo_types"]]
 
   invisible(out)
-
-}
-
-#' @noRd
-write_rds_file <- function(obj) {
-
-  saveRDS(obj[["data"]], file = paste(obj[["output"]], obj[["fmt"]], sep = "."))
-
-  obj
 
 }
 
@@ -680,13 +671,13 @@ deselect <- c(
 facts <- list(
   record = c(
     "Havainnon laatu",
-    "Havainnon määrän yksikkö",
-    "Museo, johon lajista kerätty näyte on talletettu"
+    "Havainnon m\u00e4\u00e4r\u00e4n yksikk\u00f6",
+    "Museo, johon lajista ker\u00e4tty n\u00e4yte on talletettu"
   ),
   event = c(
-    "Vesistöalue",
+    "Vesist\u00f6alue",
     "Sijainnin tarkkuusluokka",
-    "Pesintätulos"
+    "Pesint\u00e4tulos"
   ),
   document = "Seurattava laji"
 )

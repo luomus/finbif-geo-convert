@@ -16,10 +16,6 @@ expect_inherits(sf::st_read("HBF.53254_point.shp", quiet = TRUE), "sf")
 
 expect_inherits(sf::st_read("HBF.53254_polygon.shp", quiet = TRUE), "sf")
 
-finbif_geo_convert("HBF.53254.zip", "HBF.53254.rds")
-
-expect_inherits(readRDS("HBF.53254.rds"), "sf")
-
 finbif_geo_convert("HBF.53254.zip", "HBF.53254.gpkg", geo = "footprint")
 
 expect_inherits(sf::st_read("HBF.53254.gpkg"), "sf")
@@ -35,8 +31,7 @@ unlink(
     "HBF.53254_point.cpg", "HBF.53254_point.dbf", "HBF.53254_point.prj",
     "HBF.53254_point.shp", "HBF.53254_point.shx", "HBF.53254_polygon.cpg",
     "HBF.53254_polygon.dbf", "HBF.53254_polygon.prj", "HBF.53254_polygon.shp",
-    "HBF.53254_polygon.shx", "HBF.53254.rds", "HBF.53254.gpkg",
-    "rows_HBF.53254.tsv"
+    "HBF.53254_polygon.shx", "HBF.53254.gpkg", "rows_HBF.53254.tsv"
   )
 )
 
