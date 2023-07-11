@@ -1,6 +1,0 @@
-requireNamespace("logger", quietly = TRUE)
-requireNamespace("plumber", quietly = TRUE)
-requireNamespace("tictoc", quietly = TRUE)
-requireNamespace("covr", quietly = TRUE)
-requireNamespace("rapidoc", quietly = TRUE)
-requireNamespace("DT", quietly = TRUE)
