@@ -1,5 +1,11 @@
 library(sf, quietly = TRUE)
 
+token <- Sys.getenv("FINBIF_ACCESS_TOKEN")
+
+Sys.setenv("FINBIF_ACCESS_TOKEN" = "dummy")
+
+options(finbif_cache_path = "cache", finbif_allow_query = FALSE)
+
 expect_inherits(finbif_geo_convert("laji-data.tsv"), "sf")
 
 expect_inherits(finbif_geo_convert("laji-data2.tsv"), "sf")
@@ -48,9 +54,9 @@ unlink(
     "HBF.55685_point.cpg", "HBF.55685_point.dbf", "HBF.55685_point.prj",
     "HBF.55685_point.shp", "HBF.55685_point.shx", "HBF.55685_polygon.cpg",
     "HBF.55685_polygon.dbf", "HBF.55685_polygon.prj", "HBF.55685_polygon.shp",
-    "HBF.53254_polygon.shx", "HBF.55685_linestring.cpg",
+    "HBF.55685_polygon.shx", "HBF.55685_linestring.cpg",
     "HBF.55685_linestring.dbf", "HBF.55685_linestring.prj",
-    "HBF.55685_linestring.shp", "HBF.53254_linestring.shx"
+    "HBF.55685_linestring.shp", "HBF.55685_linestring.shx"
   )
 )
 
@@ -121,3 +127,5 @@ expect_equal(
   sanitise_id("HBF.645"),
   list(file = "https://tun.fi/HBF.645", name = "HBF.645")
 )
+
+Sys.setenv("FINBIF_ACCESS_TOKEN" = token)
