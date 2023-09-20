@@ -497,7 +497,6 @@ cast_to_multi <- function(x) {
 }
 
 #' @noRd
-#' @noRd
 #' @importFrom sf st_buffer st_multipolygon
 to_polygon <- function(x) {
 
@@ -522,7 +521,6 @@ to_polygon <- function(x) {
 }
 
 #'@noRd
-
 point2poly <- function(x) {
 
   sweep(
