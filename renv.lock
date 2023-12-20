@@ -248,7 +248,7 @@
       "RemoteUsername": "luomus",
       "RemoteRepo": "finbif",
       "RemoteRef": "dev",
-      "RemoteSha": "400961ac43e743260bb3c686a5079edd97db46bd",
+      "RemoteSha": "2b691e28a9a04d83a9b814f24bf40b21ada611de",
       "Requirements": [
         "R",
         "digest",
@@ -257,7 +257,7 @@
         "lutz",
         "utils"
       ],
-      "Hash": "ff291ca57adaeab8c6174207cadc5445"
+      "Hash": "8d48f0d89138a7d13d2f2b022ccddd95"
     },
     "future": {
       "Package": "future",
