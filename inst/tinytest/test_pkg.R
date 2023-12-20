@@ -12,6 +12,8 @@ expect_inherits(finbif_geo_convert("laji-data2.tsv"), "sf")
 
 expect_inherits(finbif_geo_convert("laji-data2.tsv", geo = "footprint"), "sf")
 
+expect_inherits(finbif_geo_convert("HBF.6968.zip"), "sf")
+
 suppressWarnings(
   finbif_geo_convert(
     "HBF.53254.zip", "HBF.53254.shp", "footprint", crs = "euref"

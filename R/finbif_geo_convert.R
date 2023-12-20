@@ -169,41 +169,49 @@ get_points_from_points <- function(obj) {
 
   footprint <- obj[["input_nms_footprint"]]
 
-  obj[["data"]] <- dplyr::rowwise(obj[["data"]])
+  if (nrow(obj[["data"]]) > 0L) {
 
-  obj[["data"]] <- dplyr::mutate(
-    obj[["data"]], geo = list(sf::st_point(c(.data[[lon]], .data[[lat]])))
-  )
+    obj[["data"]] <- dplyr::rowwise(obj[["data"]])
 
-  obj[["data"]][c(lat, lon)] <- NULL
+    obj[["data"]] <- dplyr::mutate(
+      obj[["data"]], geo = list(sf::st_point(c(.data[[lon]], .data[[lat]])))
+    )
 
-  obj[["data"]] <- dplyr::ungroup(obj[["data"]])
+    obj[["data"]] <- dplyr::ungroup(obj[["data"]])
 
-  obj[["data"]] <- dplyr::mutate(
-    obj[["data"]], geo = sf::st_as_sfc(.data[["geo"]], crs = 4326L)
-  )
+    obj[["data"]] <- dplyr::mutate(
+      obj[["data"]], geo = sf::st_as_sfc(.data[["geo"]], crs = 4326L)
+    )
 
-  missing_points <- sf::st_is_empty(obj[["data"]][["geo"]])
+    missing_points <- sf::st_is_empty(obj[["data"]][["geo"]])
 
-  if (any(missing_points)) {
+    if (any(missing_points)) {
 
-    sub_points <- obj[["data"]][[footprint]][missing_points]
+      sub_points <- obj[["data"]][[footprint]][missing_points]
 
-    if (any(!is.na(sub_points))) {
+      if (any(!is.na(sub_points))) {
 
-      sub_points <- stringi::stri_replace_na(sub_points, "POINT EMPTY")
+        sub_points <- stringi::stri_replace_na(sub_points, "POINT EMPTY")
 
-      sub_points <- sf::st_as_sfc(sub_points, crs = 4326L)
+        sub_points <- sf::st_as_sfc(sub_points, crs = 4326L)
 
-      sub_points <- footprint_to_points(sub_points)
+        sub_points <- footprint_to_points(sub_points)
 
-      obj[["data"]][["geo"]][missing_points] <- sub_points
+        obj[["data"]][["geo"]][missing_points] <- sub_points
+
+      }
 
     }
 
+  } else {
+
+    obj[["data"]] <- dplyr::mutate(
+      obj[["data"]], geo = st_as_sfc(list(sf::st_point()), crs = 4326L)
+    )
+
   }
 
-  obj[["data"]][[footprint]] <- NULL
+  obj[["data"]][c(lat, lon, footprint)] <- NULL
 
   sf::st_geometry(obj[["data"]]) <- "geo"
 
