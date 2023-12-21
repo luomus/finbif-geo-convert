@@ -33,16 +33,15 @@ citable file's identifier as a path parameter.
 * Upload a data file for conversion 
 * Poll the status of a conversion
 * Download the converted file in a geographic format
-* See a list of supported output formats
 
 ### **Conversion Status & Automatic Redirection**
 
-For files that are quick to convert (< 30-60s) the server will redirect the
+For files that are quick to convert (< 30s) the server will redirect the
 client to the output file automatically. Otherwise, the status of the conversion
 can be polled at `/status/{id}` where `{id}` is an identifier assigned by the
 server to the conversion. When the conversion is complete polling the status
 will redirect the client to `/output/{id}` where the file will be available
-for 1 to 24hrs after the initial request was made.
+for 24hrs after the initial request was made.
 
 ### **Examples**
 
@@ -72,8 +71,8 @@ Get the converted file via redirection:
 $ curl -JLO https://fgc.rahtiapp.fi/HBF.53254/shp/point/wgs84
 ```
 
-Upload a lite download and get a GeoJSON file back:
+Upload a lite download and get a GeoPackage file back:
 
 ```bash
-$ curl -JLOF file=@laji-data.tsv https://fgc.rahtiapp.fi/test/geojson/point/ykj
+$ curl -JLOF file=@laji-data.tsv https://fgc.rahtiapp.fi/test/gpkg/point/wgs84
 ```

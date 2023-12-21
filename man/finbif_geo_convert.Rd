@@ -20,14 +20,14 @@ linking to such a data file (e.g.,
 representing the URI (i.e., \code{53254}).}
 
 \item{output}{Character. Output file format in the form of a file extension.
-See \code{show_formats()} for a list of available file formats. Use \code{"none"}
-(default) to prevent writing output to a file.}
+One of \code{"shp"} or \verb{"gpkg". Use }"none"` (default) to prevent writing output
+to a file.}
 
 \item{geo}{Character. Geometry of output. One of \code{"point"}, \code{"bbox"} or "
 \code{"footprint"}.}
 
 \item{crs}{Character or Integer. Coordinate reference system of output. One
-of \code{"euref"}, \code{"ykj"}, \code{"wgs84"} or integer indicating an EPSG code.}
+of \code{"euref"} or \code{"wgs84"}.}
 
 \item{...}{Other options passed to \code{finbif::finbif_occurrence_load}.}
 }

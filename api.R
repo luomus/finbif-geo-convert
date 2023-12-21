@@ -2,9 +2,36 @@
 #* @apiTOS https://laji.fi/en/about/845
 #* @apiContact list(name = "laji.fi support", email = "helpdesk@laji.fi")
 #* @apiLicense list(name = "GPL-2.0", url = "https://opensource.org/licenses/GPL-2.0")
-#* @apiTag formats Output file formats
 #* @apiTag convert Convert a FinBIF occurrence data file into a geographic data format
 #* @apiTag status Check status of API
+
+suppressPackageStartupMessages({
+
+  library(fgc, quietly = TRUE)
+  library(future, quietly = TRUE)
+  library(later, quietly = TRUE)
+  library(promises, quietly = TRUE)
+  library(rapidoc, quietly = TRUE)
+  library(tools, quietly = TRUE)
+  library(utils, quietly = TRUE)
+
+})
+
+if (!dir.exists("logs/errors")) dir.create("logs/errors", recursive = TRUE)
+
+future::plan("multicore", workers = 2L)
+
+options(
+  finbif_rate_limit = Inf,
+  finbif_use_cache = FALSE,
+  finbif_use_cache_metadata = TRUE
+)
+
+if (identical(Sys.getenv("BRANCH"), "dev")) {
+
+  options(finbif_dl_url = "https://staging.laji.fi/laji-etl/download")
+
+}
 
 #* @filter cors
 cors <- function(req, res) {
@@ -43,51 +70,19 @@ function() {
 
 }
 
-#* Get a list of output file formats
-#* @get /formats
-#* @tag formats
-#* @response 200 A json object
-#* @serializer unboxedJSON
-function() {
-
-  fmts <- show_formats()
-  list(formats = data.frame(name = names(fmts), description = unname(c(fmts))))
-
-}
-
 #* Convert FinBIF data file with persistent identifier
 #* @get /<input:str>/<fmt:str>/<geo:str>/<crs:str>
 #* @post /<input:str>/<fmt:str>/<geo:str>/<crs:str>
 #* @param input:str Input file's identifier.
 #* @param fmt:str The output file format (in the form of a file extension) for the geographic data.
 #* @param geo:str The geometry type of the output. One of 'point', 'bbox' or 'footprint'.
-#* @param crs:str The coordinate reference system for the output. One of "ykj", "euref", "wgs84" or any valid numeric EPSG code.
-#* @param agg:str Aggregation. 1km, 1km_center, 10km or 10km_center. Ignored if `geo != point`.
-#* @param select:str Which variables to select? Multiple values comma separated.
-#* @param rfcts:str Record level facts. Multiple values comma separated.
-#* @param efcts:str Event level facts. Multiple values comma separated.
-#* @param dfcts:str Document level facts. Multiple values comma separated.
-#* @param dwc:bool Use Darwin Core style column names? Ignored if `fmt == shp`.
-#* @param missing:bool Keep columns containing missing data only?
-#* @param missingfcts:bool Keep "fact" columns containing missing data only?
-#* @param timeout:dbl How long should the server be allowed to wait (in seconds) until responding (max allowed is 60)?
-#* @param persist:int How long (in hours) after the request is made should the output file still be available (max 24 hours)?
+#* @param crs:str The coordinate reference system for the output. One of "euref" or "wgs84".
 #* @param file:file File to convert (maximum allowed size is ~100mb).
-#* @param filetype:str One of "citable" or "lite". Only needed if `select != all`
 #* @param personToken:str For use with restricted data downloads.
 #* @tag convert
 #* @response 303 A json object
 #* @serializer unboxedJSON
-function(
-  input, fmt, geo, crs, agg = "none", select = "all", rfcts = "none",
-  efcts = "none", dfcts = "none", dwc = "false", missing = "true",
-  missingfcts = "true", timeout = 30, persist = 1, file = "",
-  filetype = "citable", personToken = "", req, res
-) {
-
-  persist <- as.integer(persist)
-  persist <- pmax(persist, 1L)
-  persist <- pmin(persist, 24L)
+function(input, fmt, geo, crs, file = "", personToken = "", req, res) {
 
   id <- digest::digest(list(req, sample(1e9L, 1L)), "xxhash32")
 
@@ -97,52 +92,13 @@ function(
 
   dir.create(id)
 
-  on.exit(later::later(~unlink(id, recursive = TRUE), 60L * 60L * persist))
+  on.exit(later::later(~unlink(id, recursive = TRUE), 3600L))
 
   input_file <- switch(
     req[["REQUEST_METHOD"]],
     GET = input[["file"]],
     POST = paste0(id, "/", names(file)[[1L]])
   )
-
-  select <- scan(text = select, what = "char", sep = ",", quiet = TRUE)
-
-  if (!agg %in% c("1km", "10km", "1km_center", "10km_center")) agg <- NULL
-
-  facts <- list()
-
-  if (!identical(rfcts, "none")) {
-
-    facts[["record"]] <- scan(
-      text = rfcts, what = "char", sep = ",", quiet = TRUE
-    )
-
-  }
-
-  if (!identical(efcts, "none")) {
-
-    facts[["event"]] <- scan(
-      text = efcts, what = "char", sep = ",", quiet = TRUE
-    )
-
-  }
-
-  if (!identical(dfcts, "none")) {
-
-    facts[["document"]] <- scan(
-      text = dfcts, what = "char", sep = ",", quiet = TRUE
-    )
-
-  }
-
-  missing <- match.arg(missing, c("true", "false"))
-  missing <- switch(missing, true = TRUE, false = FALSE)
-
-  missingfcts <- match.arg(missingfcts, c("true", "false"))
-  missingfcts <- switch(missingfcts, true = TRUE, false = FALSE)
-
-  dwc <- match.arg(dwc, c("true", "false"))
-  dwc <- switch(dwc, true = TRUE, false = FALSE)
 
   promises::future_promise(
     {
@@ -198,8 +154,9 @@ function(
             )
 
             data <- fgc::finbif_geo_convert(
-              input_file, output_file, geo, crs, dwc = dwc, drop_na = !missing,
-              drop_facts_na = !missingfcts, quiet = TRUE, cache = FALSE,
+
+              input_file, output_file, geo, crs, drop_na = FALSE,
+              drop_facts_na = FALSE, quiet = TRUE, cache = FALSE,
               write_file = orig_path, n = n, skip = skip
             )
 
@@ -367,14 +324,13 @@ function(
 
     },
     globals = c(
-      "input", "input_file", "fmt", "geo", "agg", "crs", "select", "facts",
-      "dwc", "missing", "id", "file", "filetype", "personToken"
+      "input", "input_file", "fmt", "geo", "crs", "id", "file", "personToken"
     ),
     packages = "fgc"
   )
 
   res$status <- 303L
-  res$setHeader("Location", paste0("/status/", id, "?timeout=", timeout))
+  res$setHeader("Location", paste0("/status/", id))
 
   c(id = id)
 
@@ -383,14 +339,13 @@ function(
 #* Get status of conversion
 #* @get /status/<id:str>
 #* @param id:str The identifier of a conversion.
-#* @param timeout:dbl How long should the server be allowed to wait (in seconds) until responding (max allowed is 60).
 #* @tag convert
 #* @response 200 A json object
 #* @response 303 A json object
 #* @response 400 Client error
 #* @response 404 File not found
 #* @serializer unboxedJSON
-function(id, timeout = 30L, res) {
+function(id, res) {
 
   if (!dir.exists(id)) {
 
@@ -406,10 +361,6 @@ function(id, timeout = 30L, res) {
 
       sleep <- .1
 
-      timeout <- as.numeric(timeout)
-      timeout <- pmax(timeout, sleep)
-      timeout <- pmin(timeout, 60)
-
       timer <- 0
 
       while (length(status) < 1L) {
@@ -418,7 +369,7 @@ function(id, timeout = 30L, res) {
 
         timer <- timer + sleep
 
-        if (timer > timeout) {
+        if (timer > 30L) {
 
           status <- "pending"
 
@@ -439,7 +390,7 @@ function(id, timeout = 30L, res) {
       status
 
     },
-    globals = c("id", "timeout")
+    globals = "id"
   )
 
   promises::then(
@@ -505,7 +456,7 @@ function(id, res) {
 
 }
 
-#* @assets /usr/local/lib/R/site-library/finbif/help/figures
+#* @assets figures
 list()
 
 #* @get /favicon.ico
@@ -536,44 +487,6 @@ function(pr) {
       spec$info$version <- version
 
       spec$info$description <- readChar("api.md", file.info("api.md")$size)
-
-      spec$paths$`/formats`$get$description <- paste0(
-        "Get a list of geographic data file formats that FinBIF occurrence can ",
-        "be converted to as a JSON object."
-      )
-      spec$paths$`/formats`$get$responses$`500`$content <- NULL
-      spec$paths$`/formats`$get$responses$default <- NULL
-      spec$paths$`/formats`$get$responses$`200`$content$`application/json`$schema <- list(
-        type = "object",
-        properties = list(
-          formats = list(
-            type = "array",
-            items = list(
-              type = "object",
-              required = c("name", "description"),
-              properties = list(
-                name = list(
-                  type = "string",
-                  description = "File extension."
-                ),
-                description = list(
-                  type = "string",
-                  description = "File format description."
-                )
-              )
-            )
-          )
-        )
-      )
-
-      spec$paths$`/formats`$get$responses$`200`$content$`application/json`$example <- list(
-        formats = data.frame(
-          name = c("ext1", "ext2"),
-          description = c(
-            "File format description 1", "File format description 2"
-          )
-        )
-      )
 
       spec$paths$`/{input}/{fmt}/{geo}/{crs}`$post$summary <-
         "Convert FinBIF data file via data upload"
@@ -630,14 +543,6 @@ function(pr) {
 
       spec$paths$`/{input}/{fmt}/{geo}/{crs}`$get$requestBody <- NULL
 
-      for (i in c("filetype")) {
-
-        pars <- spec$paths$`/{input}/{fmt}/{geo}/{crs}`$get$parameters
-        ind <- which(vapply(pars, getElement, character(1L), "name") == i)
-        spec$paths$`/{input}/{fmt}/{geo}/{crs}`$get$parameters[[ind]] <- NULL
-
-      }
-
       for (i in c("personToken")) {
 
         pars <- spec$paths$`/{input}/{fmt}/{geo}/{crs}`$post$parameters
@@ -645,7 +550,6 @@ function(pr) {
         spec$paths$`/{input}/{fmt}/{geo}/{crs}`$post$parameters[[ind]] <- NULL
 
       }
-
 
       spec$paths$`/{input}/{fmt}/{geo}/{crs}`$get$description <- paste0(
         "Convert a FinBIF citable data download file to a geographic data ",
@@ -723,7 +627,6 @@ function(pr) {
         )
       )
 
-
       spec$paths$`/output/{id}`$get$description <-
         "Get the output file of a conversion using an identifier."
 
@@ -745,9 +648,9 @@ function(pr) {
 
   pr$setDocs(
     "rapidoc",
-    bg_color = "#2691d9",
-    text_color = "#ffffff",
-    primary_color = "#2c3e50",
+    bg_color = "#141B15",
+    text_color = "#FFFFFF",
+    primary_color = "#55AAE2",
     render_style = "read",
     slots = paste0(
       '<img ',

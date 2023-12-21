@@ -10,17 +10,6 @@ services:
       - "8000:8000"
     volumes:
       - logs:/home/user/logs
-  monitor:
-    image: ghcr.io/luomus/log-monitor
-    restart: unless-stopped
-    environment:
-      - "PAGE_TITLE='finbif-geo-convert'"
-    ports:
-      - "3838:3838"
-    volumes:
-      - logs:/home/user/logs
-    depends_on:
-      - convert
 
 volumes:
   logs:

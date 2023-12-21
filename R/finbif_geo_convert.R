@@ -8,12 +8,12 @@
 #'   [https://tun.fi/HBF.53254](https://tun.fi/HBF.53254)) or an integer
 #'   representing the URI (i.e., `53254`).
 #' @param output Character. Output file format in the form of a file extension.
-#'   See `show_formats()` for a list of available file formats. Use `"none"`
-#'   (default) to prevent writing output to a file.
+#'   One of `"shp"` or `"gpkg". Use `"none"` (default) to prevent writing output
+#'   to a file.
 #' @param geo Character. Geometry of output. One of `"point"`, `"bbox"` or "
 #'   `"footprint"`.
 #' @param crs Character or Integer. Coordinate reference system of output. One
-#'   of `"euref"`, `"ykj"`, `"wgs84"` or integer indicating an EPSG code.
+#'   of `"euref"` or `"wgs84"`.
 #' @param ... Other options passed to `finbif::finbif_occurrence_load`.
 #'
 #' @return An `{sf}` package simple feature object (invisibly). And if
@@ -62,7 +62,8 @@ get_fmt <- function(obj) {
   )
 
   error_if(
-    !obj[["fmt"]] %in% c("none", names(fmts)), "Format not supported",
+    !obj[["fmt"]] %in% c("none", "shp", "gpkg"),
+    "Format not supported",
     "not_supported"
   )
 
@@ -168,41 +169,49 @@ get_points_from_points <- function(obj) {
 
   footprint <- obj[["input_nms_footprint"]]
 
-  obj[["data"]] <- dplyr::rowwise(obj[["data"]])
+  if (nrow(obj[["data"]]) > 0L) {
 
-  obj[["data"]] <- dplyr::mutate(
-    obj[["data"]], geo = list(sf::st_point(c(.data[[lon]], .data[[lat]])))
-  )
+    obj[["data"]] <- dplyr::rowwise(obj[["data"]])
 
-  obj[["data"]][c(lat, lon)] <- NULL
+    obj[["data"]] <- dplyr::mutate(
+      obj[["data"]], geo = list(sf::st_point(c(.data[[lon]], .data[[lat]])))
+    )
 
-  obj[["data"]] <- dplyr::ungroup(obj[["data"]])
+    obj[["data"]] <- dplyr::ungroup(obj[["data"]])
 
-  obj[["data"]] <- dplyr::mutate(
-    obj[["data"]], geo = sf::st_as_sfc(.data[["geo"]], crs = 4326L)
-  )
+    obj[["data"]] <- dplyr::mutate(
+      obj[["data"]], geo = sf::st_as_sfc(.data[["geo"]], crs = 4326L)
+    )
 
-  missing_points <- sf::st_is_empty(obj[["data"]][["geo"]])
+    missing_points <- sf::st_is_empty(obj[["data"]][["geo"]])
 
-  if (any(missing_points)) {
+    if (any(missing_points)) {
 
-    sub_points <- obj[["data"]][[footprint]][missing_points]
+      sub_points <- obj[["data"]][[footprint]][missing_points]
 
-    if (any(!is.na(sub_points))) {
+      if (any(!is.na(sub_points))) {
 
-      sub_points <- stringi::stri_replace_na(sub_points, "POINT EMPTY")
+        sub_points <- stringi::stri_replace_na(sub_points, "POINT EMPTY")
 
-      sub_points <- sf::st_as_sfc(sub_points, crs = 4326L)
+        sub_points <- sf::st_as_sfc(sub_points, crs = 4326L)
 
-      sub_points <- footprint_to_points(sub_points)
+        sub_points <- footprint_to_points(sub_points)
 
-      obj[["data"]][["geo"]][missing_points] <- sub_points
+        obj[["data"]][["geo"]][missing_points] <- sub_points
+
+      }
 
     }
 
+  } else {
+
+    obj[["data"]] <- dplyr::mutate(
+      obj[["data"]], geo = st_as_sfc(list(sf::st_point()), crs = 4326L)
+    )
+
   }
 
-  obj[["data"]][[footprint]] <- NULL
+  obj[["data"]][c(lat, lon, footprint)] <- NULL
 
   sf::st_geometry(obj[["data"]]) <- "geo"
 
@@ -496,7 +505,6 @@ cast_to_multi <- function(x) {
 }
 
 #' @noRd
-#' @noRd
 #' @importFrom sf st_buffer st_multipolygon
 to_polygon <- function(x) {
 
@@ -521,7 +529,6 @@ to_polygon <- function(x) {
 }
 
 #'@noRd
-
 point2poly <- function(x) {
 
   sweep(
@@ -563,7 +570,6 @@ write_file <- function(obj) {
   obj <- switch(
     obj[["fmt"]],
     none = obj,
-    rds = write_rds_file(obj),
     shp = write_shp_file(obj),
     write_gdal_file(obj)
   )
@@ -577,15 +583,6 @@ write_file <- function(obj) {
   attr(out, "geo_types") <- obj[["geo_types"]]
 
   invisible(out)
-
-}
-
-#' @noRd
-write_rds_file <- function(obj) {
-
-  saveRDS(obj[["data"]], file = paste(obj[["output"]], obj[["fmt"]], sep = "."))
-
-  obj
 
 }
 
@@ -680,13 +677,13 @@ deselect <- c(
 facts <- list(
   record = c(
     "Havainnon laatu",
-    "Havainnon määrän yksikkö",
-    "Museo, johon lajista kerätty näyte on talletettu"
+    "Havainnon m\u00e4\u00e4r\u00e4n yksikk\u00f6",
+    "Museo, johon lajista ker\u00e4tty n\u00e4yte on talletettu"
   ),
   event = c(
-    "Vesistöalue",
+    "Vesist\u00f6alue",
     "Sijainnin tarkkuusluokka",
-    "Pesintätulos"
+    "Pesint\u00e4tulos"
   ),
   document = "Seurattava laji"
 )
