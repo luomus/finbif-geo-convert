@@ -7,3 +7,13 @@
 ^prepare-for-release$
 ^LICENSE\.md$
 ^renv$
+^Dockerfile$
+^api\.R$
+^api\.md$
+^cov$
+^docker-compose\.test\.yml$
+^docker-compose\.yml$
+^favicon\.ico$
+^logo\.png$
+^oc-process\.sh$
+^template.yml$
