@@ -17,3 +17,9 @@
 ^logo\.png$
 ^oc-process\.sh$
 ^template.yml$
+^archives$
+^coverage$
+^data$
+^logs$
+^stage$
+^tmp$
