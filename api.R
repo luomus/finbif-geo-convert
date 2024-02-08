@@ -78,12 +78,13 @@ function() {
 #* @param fmt:str The output file format (in the form of a file extension) for the geographic data.
 #* @param geo:str The geometry type of the output. One of 'point', 'bbox' or 'footprint'.
 #* @param crs:str The coordinate reference system for the output. One of "euref" or "wgs84".
+#* @param timeout:dbl How long should the server be allowed to wait (in seconds) until responding (max allowed is 60)?
 #* @param file:file File to convert (maximum allowed size is ~100mb).
 #* @param personToken:str For use with restricted data downloads.
 #* @tag convert
 #* @response 303 A json object
 #* @serializer unboxedJSON
-function(input, fmt, geo, crs, file = "", personToken = "", req, res) {
+function(input, fmt, geo, crs, timeout = 30, file = "", personToken = "", req, res) {
 
   id <- digest::digest(list(req, sample(1e9L, 1L)), "xxhash32")
 
@@ -330,7 +331,7 @@ function(input, fmt, geo, crs, file = "", personToken = "", req, res) {
   )
 
   res$status <- 303L
-  res$setHeader("Location", paste0("/status/", id))
+  res$setHeader("Location", paste0("/status/", id, "?timeout=", timeout))
 
   c(id = id)
 
@@ -339,13 +340,14 @@ function(input, fmt, geo, crs, file = "", personToken = "", req, res) {
 #* Get status of conversion
 #* @get /status/<id:str>
 #* @param id:str The identifier of a conversion.
+#* @param timeout:dbl How long should the server be allowed to wait (in seconds) until responding (max allowed is 60).
 #* @tag convert
 #* @response 200 A json object
 #* @response 303 A json object
 #* @response 400 Client error
 #* @response 404 File not found
 #* @serializer unboxedJSON
-function(id, res) {
+function(id, res, timeout = 30) {
 
   if (!dir.exists(id)) {
 
@@ -361,6 +363,10 @@ function(id, res) {
 
       sleep <- .1
 
+      timeout <- as.numeric(timeout)
+      timeout <- pmax(timeout, sleep)
+      timeout <- pmin(timeout, 60)
+
       timer <- 0
 
       while (length(status) < 1L) {
@@ -369,7 +375,7 @@ function(id, res) {
 
         timer <- timer + sleep
 
-        if (timer > 30L) {
+        if (timer > timeout) {
 
           status <- "pending"
 
@@ -390,7 +396,7 @@ function(id, res) {
       status
 
     },
-    globals = "id"
+    globals = c("id", "timeout")
   )
 
   promises::then(
