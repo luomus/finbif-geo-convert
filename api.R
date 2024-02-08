@@ -7,6 +7,7 @@
 
 suppressPackageStartupMessages({
 
+  library(data.table, quietly = TRUE)
   library(fgc, quietly = TRUE)
   library(future, quietly = TRUE)
   library(later, quietly = TRUE)
