@@ -154,7 +154,6 @@ function(input, fmt, geo, crs, file = "", personToken = "", req, res) {
             )
 
             data <- fgc::finbif_geo_convert(
-
               input_file, output_file, geo, crs, drop_na = FALSE,
               drop_facts_na = FALSE, quiet = TRUE, cache = FALSE,
               write_file = orig_path, n = n, skip = skip
