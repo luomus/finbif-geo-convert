@@ -1,4 +1,5 @@
-FROM ghcr.io/luomus/base-r-image@sha256:b274fdd5ea06de31652330f805ea75e4ecdfb054399a2da812088fde11e3e309
+# docker manifest inspect ghcr.io/luomus/base-r-image:main -v | jq '.Descriptor.digest'
+FROM ghcr.io/luomus/base-r-image@sha256:d57626b4f4f1e0d8e3d657624ced4774fb9800682e26dd2cbbe852f75a97b683
 
 ENV FINBIF_USER_AGENT=https://github.com/luomus/finbif-geo-convert
 ENV FINBIF_USE_PRIVATE_API=true
