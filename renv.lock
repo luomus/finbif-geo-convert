@@ -252,14 +252,9 @@
     },
     "finbif": {
       "Package": "finbif",
-      "Version": "0.9.4.9000",
-      "Source": "GitHub",
-      "RemoteType": "github",
-      "RemoteHost": "api.github.com",
-      "RemoteUsername": "luomus",
-      "RemoteRepo": "finbif",
-      "RemoteRef": "dev",
-      "RemoteSha": "39848cecf9d672e30bae9b259d18e7ba4c9f5157",
+      "Version": "0.9.5",
+      "Source": "Repository",
+      "Repository": "CRAN",
       "Requirements": [
         "R",
         "digest",
@@ -267,7 +262,7 @@
         "lutz",
         "utils"
       ],
-      "Hash": "04ee72cf29708e19727778c4908b5bc3"
+      "Hash": "53d844d384d8d32c13352a35457653d2"
     },
     "future": {
       "Package": "future",
@@ -319,9 +314,9 @@
     },
     "httpuv": {
       "Package": "httpuv",
-      "Version": "1.6.14",
+      "Version": "1.6.15",
       "Source": "Repository",
-      "Repository": "RSPM",
+      "Repository": "CRAN",
       "Requirements": [
         "R",
         "R6",
@@ -330,7 +325,7 @@
         "promises",
         "utils"
       ],
-      "Hash": "16abeb167dbf511f8cc0552efaf05bab"
+      "Hash": "d55aa087c47a63ead0f6fc10f8fa1ee0"
     },
     "httr": {
       "Package": "httr",
@@ -488,7 +483,7 @@
     },
     "plumber": {
       "Package": "plumber",
-      "Version": "1.2.1",
+      "Version": "1.2.2",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -508,7 +503,7 @@
         "swagger",
         "webutils"
       ],
-      "Hash": "8b65a7a00ef8edc5ddc6fabf0aff1194"
+      "Hash": "0c671ac357592beb716f19b818b72e50"
     },
     "promises": {
       "Package": "promises",
@@ -580,7 +575,7 @@
     },
     "sf": {
       "Package": "sf",
-      "Version": "1.0-15",
+      "Version": "1.0-16",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -599,7 +594,7 @@
         "units",
         "utils"
       ],
-      "Hash": "f432b3379fb1a47046e253468b6b6b6d"
+      "Hash": "ad57b543f7c3fca05213ba78ff63df9b"
     },
     "sodium": {
       "Package": "sodium",
