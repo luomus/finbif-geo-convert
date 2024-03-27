@@ -483,7 +483,7 @@
     },
     "plumber": {
       "Package": "plumber",
-      "Version": "1.2.2",
+      "Version": "1.2.1",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -503,7 +503,7 @@
         "swagger",
         "webutils"
       ],
-      "Hash": "0c671ac357592beb716f19b818b72e50"
+      "Hash": "8b65a7a00ef8edc5ddc6fabf0aff1194"
     },
     "promises": {
       "Package": "promises",
