@@ -85,7 +85,7 @@ objects:
       matchLabels:
         app: ${APP}
     strategy:
-      type: Recreate
+      type: RollingUpdate
     template:
       metadata:
         labels:
