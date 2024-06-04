@@ -481,6 +481,14 @@ function() {
 
 }
 
+#* @get /
+function(res) {
+
+  res$status <- 303L
+  res$setHeader("Location", "/__docs__/")
+
+}
+
 #* @plumber
 function(pr) {
 
