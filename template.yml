@@ -53,6 +53,10 @@ objects:
     labels:
       app: ${APP}
   spec:
+    resources:
+      limits:
+        cpu: "1000m"
+        memory: "2Gi"
     output:
       to:
         kind: ImageStreamTag
