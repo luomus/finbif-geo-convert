@@ -120,7 +120,7 @@ objects:
           - name: FINBIF_PRIVATE_API
             value: ${FINBIF_PRIVATE_API}
           - name: FINBIF_USE_PRIVATE_API
-            value: true
+            value: "true"
           - name: FINBIF_USER_AGENT
             value: https://github.com/luomus/${APP}.git
           - name: SMTP_SERVER
