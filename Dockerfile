@@ -1,8 +1,5 @@
 # docker manifest inspect ghcr.io/luomus/base-r-image:main -v | jq '.Descriptor.digest'
-FROM ghcr.io/luomus/base-r-image@sha256:c93c6f4e1fbf174d4cfd140689b1ab97bff269f2ecd25e4277d0e0d5b657fb20
-
-ENV FINBIF_USER_AGENT=https://github.com/luomus/finbif-geo-convert
-ENV FINBIF_USE_PRIVATE_API=true
+FROM ghcr.io/luomus/base-r-image@sha256:0791819654bfb9260b027469a6d33e6f5ed5043c801dcf72f51045b200a41b6b
 
 COPY renv.lock /home/user/renv.lock
 
