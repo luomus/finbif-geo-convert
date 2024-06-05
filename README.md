@@ -6,7 +6,7 @@ Convert FinBIF occurrence data downloads to various geographic file formats
 
 ## HTTP API
 
-See online [documentation](https://fgc.rahtiapp.fi/__docs__/) for details.
+See online [documentation](https://fgc.laji.fi) for details.
 
 ### Deploy
 
