@@ -30,49 +30,9 @@ parameters:
     required: true
   - name: ERROR_EMAIL_FROM
     required: true
-  - name: GITHUB_SECRET
-    required: true
-    generate: expression
-    from: "[a-zA-Z0-9]{20}"
 metadata:
   name: ${APP}
 objects:
-- kind: ImageStream
-  apiVersion: v1
-  metadata:
-    name: ${APP}-${BRANCH}
-    labels:
-      app: ${APP}
-  spec:
-    lookupPolicy:
-      local: true
-- kind: BuildConfig
-  apiVersion: v1
-  metadata:
-    name: ${APP}-${BRANCH}
-    labels:
-      app: ${APP}
-  spec:
-    resources:
-      limits:
-        cpu: "1000m"
-        memory: "2Gi"
-    output:
-      to:
-        kind: ImageStreamTag
-        name: ${APP}-${BRANCH}:latest
-    source:
-      type: Git
-      git:
-        uri: https://github.com/luomus/${APP}.git
-        ref: ${BRANCH}
-    strategy:
-      type: Docker
-    triggers:
-    - type: ConfigChange
-    - type: GitHub
-      github:
-        secret: ${GITHUB_SECRET}
 - kind: Deployment
   apiVersion: apps/v1
   metadata:
@@ -93,7 +53,7 @@ objects:
           branch: ${BRANCH}
       spec:
         containers:
-        - image: ${APP}-${BRANCH}:latest
+        - image: ghcr.io/luomus/${APP}:${BRANCH}
           name: ${APP}-${BRANCH}
           ports:
           - containerPort: ${{APP_PORT}}
@@ -137,8 +97,7 @@ objects:
             value: ${ERROR_EMAIL_FROM}
           resources:
             limits:
-              cpu: "1500m"
-              memory: "7Gi"
+              memory: 400Mi
 - kind: Service
   apiVersion: v1
   metadata:

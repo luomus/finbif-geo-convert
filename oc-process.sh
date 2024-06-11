@@ -26,25 +26,17 @@ FINBIF_PRIVATE_API="dev"
 
 fi
 
-if [ $i = "image" ]; then
+if [ $i = "deploy" ]; then
 
 ITEM=".items[0]"
 
-elif [ $i = "build" ]; then
+elif [ $i = "service" ]; then
 
 ITEM=".items[1]"
 
-elif [ $i = "deploy" ]; then
-
-ITEM=".items[2]"
-
-elif [ $i = "service" ]; then
-
-ITEM=".items[3]"
-
 elif [ $i = "route" ]; then
 
-ITEM=".items[4]"
+ITEM=".items[2]"
 
 else
 
