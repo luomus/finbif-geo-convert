@@ -618,10 +618,10 @@
     },
     "swagger": {
       "Package": "swagger",
-      "Version": "3.33.1",
+      "Version": "5.17.14",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "f28d25ed70c903922254157c11b0081d"
+      "Hash": "d1624242680cd79dd16ba68c9da21319"
     },
     "sys": {
       "Package": "sys",
