@@ -1,6 +1,8 @@
 #!/bin/bash
 
 i="all"
+f="template.yml"
+e=".env"
 
 while getopts ":f:e:i::" flag; do
 case $flag in
@@ -49,7 +51,7 @@ exit 1
 
 fi
 
-oc project finbif-geo-convert
+echo "# $(oc project finbif-geo-convert)"
 
 oc process -f $f \
 -p BRANCH=$BRANCH \
