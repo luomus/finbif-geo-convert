@@ -38,11 +38,18 @@ elif [ $i = "route" ]; then
 
 ITEM=".items[2]"
 
+elif [ $i = "all" ]; then
+
+ITEM=""
+
 else
 
-  ITEM=""
+echo "Object not found"
+exit 1
 
 fi
+
+oc project finbif-geo-convert
 
 oc process -f $f \
 -p BRANCH=$BRANCH \
