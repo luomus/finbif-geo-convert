@@ -18,6 +18,10 @@ parameters:
     value: "2e8"
   - name: BRANCH
     required: true
+  - name: MEMORY
+    required: true
+  - name: MAX_CHUNK_SIZE
+    required: true
   - name: FINBIF_PRIVATE_API
     required: true
   - name: HOST
@@ -80,6 +84,8 @@ objects:
             value: ${BRANCH}
           - name: PAGE_TITLE
             value: ${PAGE_TITLE}
+          - name: MAX_CHUNK_SIZE
+            value: ${MAX_CHUNK_SIZE}
           - name: FINBIF_FILE_SIZE_LIMIT
             value: ${FILE_SIZE_LIMIT}
           - name: FINBIF_PRIVATE_API
@@ -87,7 +93,7 @@ objects:
           - name: FINBIF_USE_PRIVATE_API
             value: "true"
           - name: FINBIF_USER_AGENT
-            value: https://github.com/luomus/${APP}.git
+            value: https://github.com/luomus/${APP}:${BRANCH}
           - name: SMTP_SERVER
             value: ${SMTP_SERVER}
           - name: SMTP_PORT
@@ -98,7 +104,7 @@ objects:
             value: ${ERROR_EMAIL_FROM}
           resources:
             limits:
-              memory: 400Mi
+              memory: ${MEMORY}
 - kind: Service
   apiVersion: v1
   metadata:
