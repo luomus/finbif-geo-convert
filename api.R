@@ -140,7 +140,7 @@ function(input, fmt, geo, crs, timeout = 30, file = "", personToken = "", req, r
           output_file <- output_file_init
 
           skip <- 0L
-          n <- as.integer(Sys.getenv("MAX_CHUNK_SIZE", "1e5"))
+          n <- as.integer(Sys.getenv("MAX_CHUNK_SIZE", "5e4"))
           data <- list()
           attr(data, "n_rows") <- Inf
           acc <- character()
