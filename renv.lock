@@ -252,7 +252,7 @@
     },
     "finbif": {
       "Package": "finbif",
-      "Version": "0.9.6",
+      "Version": "0.9.7",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -262,11 +262,11 @@
         "lutz",
         "utils"
       ],
-      "Hash": "4dd408fcac4155e004d995168d9ee2cf"
+      "Hash": "9e2f89ab5cdb9aa8a2a44b813fa63318"
     },
     "future": {
       "Package": "future",
-      "Version": "1.33.2",
+      "Version": "1.34.0",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -277,7 +277,7 @@
         "parallelly",
         "utils"
       ],
-      "Hash": "fd7b1d69d16d0d114e4fa82db68f184c"
+      "Hash": "475771e3edb711591476be387c9a8c2e"
     },
     "generics": {
       "Package": "generics",
@@ -444,7 +444,7 @@
     },
     "parallelly": {
       "Package": "parallelly",
-      "Version": "1.37.1",
+      "Version": "1.38.0",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -452,7 +452,7 @@
         "tools",
         "utils"
       ],
-      "Hash": "5410df8d22bd36e616f2a2343dbb328c"
+      "Hash": "6e8b139c1904f5e9e14c69db64453bbe"
     },
     "pillar": {
       "Package": "pillar",
@@ -736,7 +736,7 @@
     },
     "withr": {
       "Package": "withr",
-      "Version": "3.0.0",
+      "Version": "3.0.1",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -744,7 +744,7 @@
         "grDevices",
         "graphics"
       ],
-      "Hash": "d31b6c62c10dcf11ec530ca6b0dd5d35"
+      "Hash": "07909200e8bbe90426fbfeb73e1e27aa"
     },
     "wk": {
       "Package": "wk",
