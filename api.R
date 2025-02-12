@@ -75,7 +75,7 @@ function() {
 #* @get /<input:str>/<fmt:str>/<geo:str>/<crs:str>
 #* @post /<input:str>/<fmt:str>/<geo:str>/<crs:str>
 #* @param input:str Input file's identifier.
-#* @param fmt:str The output file format (in the form of a file extension) for the geographic data.
+#* @param fmt:str The output file format (in the form of a file extension) for the geographic data. Currently only 'gpkg' is available.
 #* @param geo:str The geometry type of the output. One of 'point', 'bbox' or 'footprint'.
 #* @param crs:str The coordinate reference system for the output. One of "euref" or "wgs84".
 #* @param timeout:dbl How long should the server be allowed to wait (in seconds) until responding (max allowed is 60)?
@@ -131,6 +131,7 @@ function(input, fmt, geo, crs, timeout = 30, file = "", personToken = "", req, r
       orig_path <- paste0(id, "/", orig_file)
 
       res <- try(
+
         {
 
           input_name <- gsub("\\.", "_", input[["name"]])
@@ -144,7 +145,6 @@ function(input, fmt, geo, crs, timeout = 30, file = "", personToken = "", req, r
           data <- list()
           attr(data, "n_rows") <- Inf
           acc <- character()
-          fmt_name <- switch(fmt, shp = "'ESRI Shapefile'", "'gpkg'")
 
           progress_file <- file.path(id, "progress")
 
@@ -167,17 +167,53 @@ function(input, fmt, geo, crs, timeout = 30, file = "", personToken = "", req, r
 
             } else {
 
-              if (!identical(fmt, "shp")) {
+              for (i in seq_along(attr(data, "geo_types"))) {
 
-                error_code <- system2(
-                  "ogr2ogr",
-                  c(
-                    "-f", fmt_name, "-update", "-append", output_file_init,
-                    output_file
+                args <- list(
+                  file = sprintf(
+                    "%s/%s_%s.%s", id, basename(attr(data, "output")),
+                    attr(data, "geo_types")[[i]], fmt
                   ),
-                  stdout = FALSE,
-                  stderr = FALSE
+                  add_file = sprintf(
+                    "%s/%s/%s_%s.%s", id, acc[[length(acc)]],
+                    basename(attr(data, "output")),
+                    attr(data, "geo_types")[[i]], fmt
+                  ),
+                  layer = sprintf(
+                    "%s_%s", basename(attr(data, "output")),
+                    attr(data, "geo_types")[[i]]
+                  )
                 )
+
+                if (attr(data, "geo_types")[[i]] %in% geo_types_combined) {
+
+                  error_code <- system2(
+                    "ogr2ogr",
+                    c(
+                      "-f", "'gpkg'", "-update", "-append", args[["file"]],
+                      args[["add_file"]], "-nln", args[["layer"]]
+                    ),
+                    stdout = FALSE,
+                    stderr = FALSE
+                  )
+
+                } else {
+
+                  error_code <- system2(
+                    "ogr2ogr",
+                    c(
+                      "-f", "'gpkg'", args[["file"]], args[["add_file"]],
+                      "-nln", args[["layer"]]
+                    ),
+                    stdout = FALSE,
+                    stderr = FALSE
+                  )
+
+                  geo_types_combined <- c(
+                    geo_types_combined, attr(data, "geo_types")[[i]]
+                  )
+
+                }
 
                 if (!identical(error_code, 0L)) {
 
@@ -185,67 +221,6 @@ function(input, fmt, geo, crs, timeout = 30, file = "", personToken = "", req, r
                     "Could not combine files; err_name: combine_failed",
                     call. = FALSE
                   )
-
-                }
-
-              } else {
-
-                for (i in seq_along(attr(data, "geo_types"))) {
-
-                  args <- list(
-                    file = sprintf(
-                      "%s/%s_%s.%s", id, basename(attr(data, "output")),
-                      attr(data, "geo_types")[[i]], fmt
-                    ),
-                    add_file = sprintf(
-                      "%s/%s/%s_%s.%s", id, acc[[length(acc)]],
-                      basename(attr(data, "output")),
-                      attr(data, "geo_types")[[i]], fmt
-                    ),
-                    layer = sprintf(
-                      "%s_%s", basename(attr(data, "output")),
-                      attr(data, "geo_types")[[i]]
-                    )
-                  )
-
-                  if (attr(data, "geo_types")[[i]] %in% geo_types_combined) {
-
-                    error_code <- system2(
-                      "ogr2ogr",
-                      c(
-                        "-f", fmt_name, "-update", "-append", args[["file"]],
-                        args[["add_file"]], "-nln", args[["layer"]]
-                      ),
-                      stdout = FALSE,
-                      stderr = FALSE
-                    )
-
-                  } else {
-
-                    error_code <- system2(
-                      "ogr2ogr",
-                      c(
-                        "-f", fmt_name, args[["file"]], args[["add_file"]],
-                        "-nln", args[["layer"]]
-                      ),
-                      stdout = FALSE,
-                      stderr = FALSE
-                    )
-
-                    geo_types_combined <- c(
-                      geo_types_combined, attr(data, "geo_types")[[i]]
-                    )
-
-                  }
-
-                  if (!identical(error_code, 0L)) {
-
-                    stop(
-                      "Could not combine files; err_name: combine_failed",
-                      call. = FALSE
-                    )
-
-                  }
 
                 }
 

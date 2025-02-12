@@ -1,7 +1,7 @@
 ## Overview
 
 Use this HTTP API to convert a FinBIF occurrence data file into a geographic
-data format (a "shapefile").
+data format.
 
 ### **FinBIF Occurrence Data Files**
 
@@ -48,7 +48,7 @@ for 24hrs after the initial request was made.
 Make a request to convert a citable file:
 
 ```bash
-$ curl https://fgc.rahtiapp.fi/HBF.53254/shp/point/wgs84
+$ curl https://fgc.rahtiapp.fi/HBF.53254/gpkg/point/wgs84
 "HBF.53254-20920cf1"
 ```
 
@@ -68,7 +68,7 @@ $ curl -O http://fgc.rahtiapp.fi/output/HBF.53254-20920cf1
 Get the converted file via redirection:
 
 ```bash
-$ curl -JLO https://fgc.rahtiapp.fi/HBF.53254/shp/point/wgs84
+$ curl -JLO https://fgc.rahtiapp.fi/HBF.53254/gpkg/point/wgs84
 ```
 
 Upload a lite download and get a GeoPackage file back:

@@ -14,16 +14,6 @@ expect_inherits(finbif_geo_convert("laji-data2.tsv", geo = "footprint"), "sf")
 
 expect_inherits(finbif_geo_convert("HBF.6968.zip", n = 1), "sf")
 
-suppressWarnings(
-  finbif_geo_convert(
-    "HBF.53254.zip", "HBF.53254.shp", "footprint", crs = "euref"
-  )
-)
-
-expect_inherits(sf::st_read("HBF.53254_point.shp", quiet = TRUE), "sf")
-
-expect_inherits(sf::st_read("HBF.53254_polygon.shp", quiet = TRUE), "sf")
-
 finbif_geo_convert("HBF.53254.zip", "HBF.53254.gpkg", geo = "footprint")
 
 expect_inherits(sf::st_read("HBF.53254.gpkg"), "sf")
@@ -34,33 +24,17 @@ expect_inherits(
   finbif_geo_convert("HBF.53254.zip", "none", "bbox", crs = "euref"), "sf"
 )
 
-unlink(
-  c(
-    "HBF.53254_point.cpg", "HBF.53254_point.dbf", "HBF.53254_point.prj",
-    "HBF.53254_point.shp", "HBF.53254_point.shx", "HBF.53254_polygon.cpg",
-    "HBF.53254_polygon.dbf", "HBF.53254_polygon.prj", "HBF.53254_polygon.shp",
-    "HBF.53254_polygon.shx", "HBF.53254.gpkg", "rows_HBF.53254.tsv"
-  )
-)
+unlink(c("HBF.53254.gpkg", "rows_HBF.53254.tsv"))
 
 suppressWarnings(
-  finbif_geo_convert("HBF.55685.zip", "HBF.55685.shp", "footprint", n = 334L)
+  finbif_geo_convert("HBF.55685.zip", "HBF.55685.gpkg", "footprint", n = 334L)
 )
 
 expect_inherits(
-  sf::st_read("HBF.55685_linestring.shp", quiet = TRUE), "sf"
+  sf::st_read("HBF.55685.gpkg", quiet = TRUE), "sf"
 )
 
-unlink(
-  c(
-    "HBF.55685_point.cpg", "HBF.55685_point.dbf", "HBF.55685_point.prj",
-    "HBF.55685_point.shp", "HBF.55685_point.shx", "HBF.55685_polygon.cpg",
-    "HBF.55685_polygon.dbf", "HBF.55685_polygon.prj", "HBF.55685_polygon.shp",
-    "HBF.55685_polygon.shx", "HBF.55685_linestring.cpg",
-    "HBF.55685_linestring.dbf", "HBF.55685_linestring.prj",
-    "HBF.55685_linestring.shp", "HBF.55685_linestring.shx"
-  )
-)
+unlink("HBF.55685.gpkg")
 
 mpoi <- fgc:::uncollect(
   sf::st_geometrycollection(

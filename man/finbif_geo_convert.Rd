@@ -19,9 +19,8 @@ linking to such a data file (e.g.,
 \url{https://tun.fi/HBF.53254}) or an integer
 representing the URI (i.e., \code{53254}).}
 
-\item{output}{Character. Output file format in the form of a file extension.
-One of \code{"shp"} or \verb{"gpkg". Use }"none"` (default) to prevent writing output
-to a file.}
+\item{output}{Character. One of \code{"gpkg"} or \code{"none"} (default) to prevent
+writing output to a file.}
 
 \item{geo}{Character. Geometry of output. One of \code{"point"}, \code{"bbox"} or "
 \code{"footprint"}.}

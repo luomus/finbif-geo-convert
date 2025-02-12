@@ -7,9 +7,8 @@
 #'   linking to such a data file (e.g.,
 #'   [https://tun.fi/HBF.53254](https://tun.fi/HBF.53254)) or an integer
 #'   representing the URI (i.e., `53254`).
-#' @param output Character. Output file format in the form of a file extension.
-#'   One of `"shp"` or `"gpkg". Use `"none"` (default) to prevent writing output
-#'   to a file.
+#' @param output Character. One of `"gpkg"` or `"none"` (default) to prevent
+#'   writing output to a file.
 #' @param geo Character. Geometry of output. One of `"point"`, `"bbox"` or "
 #'   `"footprint"`.
 #' @param crs Character or Integer. Coordinate reference system of output. One
@@ -62,7 +61,7 @@ get_fmt <- function(obj) {
   )
 
   error_if(
-    !obj[["fmt"]] %in% c("none", "shp", "gpkg"),
+    !obj[["fmt"]] %in% c("none", "gpkg"),
     "Format not supported",
     "not_supported"
   )
@@ -77,7 +76,7 @@ get_fmt <- function(obj) {
 #' @importFrom finbif fb_occurrence_load
 get_input <- function(obj, ...) {
 
-  obj[["col_type"]] <- switch(obj[["fmt"]], shp = "short", "all")
+  obj[["col_type"]] <- "all"
 
   obj[["data"]] <- finbif::finbif_occurrence_load(
     obj[["input"]],
@@ -101,14 +100,6 @@ sanitise_nms <- function(obj) {
   names(obj[["data"]]) <- gsub("\\s", "_", names(obj[["data"]]))
 
   names(obj[["data"]]) <- gsub("\\W", "", names(obj[["data"]]))
-
-  if (identical(obj[["fmt"]] , "shp")) {
-
-    names(obj[["data"]]) <- stringi::stri_trans_general(
-      names(obj[["data"]]), "Latin-ASCII"
-    )
-
-  }
 
   obj
 
@@ -570,7 +561,6 @@ write_file <- function(obj) {
   obj <- switch(
     obj[["fmt"]],
     none = obj,
-    shp = write_shp_file(obj),
     write_gdal_file(obj)
   )
 
@@ -583,29 +573,6 @@ write_file <- function(obj) {
   attr(out, "geo_types") <- obj[["geo_types"]]
 
   invisible(out)
-
-}
-
-#' @noRd
-#' @importFrom sf st_write
-write_shp_file <- function(obj) {
-
-  obj <- split_data_by_gtype(obj)
-
-  for (i in seq_along(obj[["data"]])) {
-
-    sf::st_write(
-      obj[["data"]][[i]],
-      sprintf(
-        "%s_%s.%s", obj[["output"]], obj[["geo_types"]][[i]], obj[["fmt"]]
-      ),
-      layer_options = "ENCODING=UTF-8",
-      quiet = TRUE
-    )
-
-  }
-
-  obj
 
 }
 
@@ -640,14 +607,6 @@ split_data_by_gtype <- function(obj) {
   geo_types <- geometry_type_chr(obj[["data"]])
 
   obj[["geo_types"]] <- unique(geo_types)
-
-  shp_incompatible <- anyNA(match(obj[["geo_types"]], shp_fmt_types))
-
-  error_if(
-    shp_incompatible && identical(obj[["fmt"]], "shp"),
-    "Geometry too complex for '.shp' file. Please select another format.",
-    "too_complex"
-  )
 
   data <- list()
 
@@ -690,18 +649,8 @@ facts <- list(
 
 #' @noRd
 input_nms <- list(
-  short = list(
-    points =  c(lat = "latWGS84", lon = "lonWGS84"),
-    footprint = "fprntWGS84"
-  ),
   all = list(
     points = c(lat = "lat_wgs84", lon = "lon_wgs84"),
     footprint = "footprint_wgs84"
   )
-)
-
-#' @noRd
-shp_fmt_types <- c(
-  "POINT", "POLYGON", "LINESTRING", "MULTIPOINT", "MULTILINESTRING",
-  "MULTIPOLYGON"
 )
