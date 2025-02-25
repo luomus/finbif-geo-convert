@@ -161,68 +161,24 @@ function(input, fmt, geo, crs, timeout = 30, file = "", personToken = "", req, r
               write_file = orig_path, n = n, skip = skip
             )
 
-            if (length(acc) < 1L) {
+            if (length(acc) > 0L) {
 
-              geo_types_combined <- attr(data, "geo_types")
+              error_code <- system2(
+                "ogr2ogr",
+                c(
+                  "-f", "'gpkg'", "-update", "-append", output_file_init,
+                  output_file
+                ),
+                stdout = FALSE,
+                stderr = FALSE
+              )
 
-            } else {
+              if (!identical(error_code, 0L)) {
 
-              for (i in seq_along(attr(data, "geo_types"))) {
-
-                args <- list(
-                  file = sprintf(
-                    "%s/%s_%s.%s", id, basename(attr(data, "output")),
-                    attr(data, "geo_types")[[i]], fmt
-                  ),
-                  add_file = sprintf(
-                    "%s/%s/%s_%s.%s", id, acc[[length(acc)]],
-                    basename(attr(data, "output")),
-                    attr(data, "geo_types")[[i]], fmt
-                  ),
-                  layer = sprintf(
-                    "%s_%s", basename(attr(data, "output")),
-                    attr(data, "geo_types")[[i]]
-                  )
+                stop(
+                  "Could not combine files; err_name: combine_failed",
+                  call. = FALSE
                 )
-
-                if (attr(data, "geo_types")[[i]] %in% geo_types_combined) {
-
-                  error_code <- system2(
-                    "ogr2ogr",
-                    c(
-                      "-f", "'gpkg'", "-update", "-append", args[["file"]],
-                      args[["add_file"]], "-nln", args[["layer"]]
-                    ),
-                    stdout = FALSE,
-                    stderr = FALSE
-                  )
-
-                } else {
-
-                  error_code <- system2(
-                    "ogr2ogr",
-                    c(
-                      "-f", "'gpkg'", args[["file"]], args[["add_file"]],
-                      "-nln", args[["layer"]]
-                    ),
-                    stdout = FALSE,
-                    stderr = FALSE
-                  )
-
-                  geo_types_combined <- c(
-                    geo_types_combined, attr(data, "geo_types")[[i]]
-                  )
-
-                }
-
-                if (!identical(error_code, 0L)) {
-
-                  stop(
-                    "Could not combine files; err_name: combine_failed",
-                    call. = FALSE
-                  )
-
-                }
 
               }
 
