@@ -339,7 +339,7 @@ function(id, res, timeout = 30) {
       sleep <- .1
 
       timeout <- as.numeric(timeout)
-      timeout <- pmax(timeout, sleep)
+      timeout <- pmax(timeout - 1, sleep)
       timeout <- pmin(timeout, 60)
 
       timer <- 0
