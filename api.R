@@ -256,7 +256,15 @@ function(input, fmt, geo, crs, timeout = 30, file = "", personToken = "", req, r
 
     },
     globals = c(
-      "input", "input_file", "fmt", "geo", "crs", "id", "file", "personToken"
+      "input",
+      "input_file",
+      "fmt",
+      "geo",
+      "crs",
+      "id",
+      "file",
+      "personToken",
+      "req"
     ),
     packages = "fgc"
   )
