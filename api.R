@@ -378,6 +378,7 @@ function(id, res, timeout = 30) {
 
 #* Get the output file of conversion
 #* @get /output/<id:str>
+#* @head /output/<id:str>
 #* @param id:str The identifier of a conversion.
 #* @tag convert
 #* @response 200 A ZIP archive file attachment
@@ -589,6 +590,7 @@ function(pr) {
 
       spec$paths$`/output/{id}`$get$responses$`500`$content <- NULL
       spec$paths$`/output/{id}`$get$responses$default <- NULL
+      spec$paths$`/output/{id}`$head <- NULL
 
       spec$paths$`/healthz` <- NULL
       spec$paths$`/favicon.ico` <- NULL
