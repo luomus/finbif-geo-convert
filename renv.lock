@@ -618,17 +618,18 @@
     },
     "finbif": {
       "Package": "finbif",
-      "Version": "0.9.10",
-      "Source": "Repository",
+      "Version": "0.9.10.9001",
+      "Source": "GitHub",
       "Title": "Interface for the 'Finnish Biodiversity Information Facility' API",
-      "Authors@R": "c( person(given = \"Finnish Museum of Natural History - Luomus\", role = \"cph\"), person(given = \"William K.\", family = \"Morris\", role = c(\"aut\", \"cre\"), email = \"willi@mmorris.email\", comment = c(ORCID = \"0000-0002-8686-4154\")) )",
+      "Authors@R": "c( person(given = \"Finnish Museum of Natural History - Luomus\", role = \"cph\", comment = c(ROR = \"03tcx6c30\")), person(given = \"Finnish Biodiversity Information Facility\", role = \"cph\", comment = c(ROR = \"01c0yey93\")), person(given = \"William K.\", family = \"Morris\", role = c(\"aut\", \"cre\"), email = \"willi@mmorris.email\", comment = c(ORCID = \"0000-0002-8686-4154\")) )",
       "Description": "A programmatic interface to the 'Finnish Biodiversity Information Facility' ('FinBIF') API (<https://api.laji.fi>). 'FinBIF' aggregates Finnish biodiversity data from multiple sources in a single open access portal for researchers, citizen scientists, industry and government. 'FinBIF' allows users of biodiversity information to find, access, combine and visualise data on Finnish plants, animals and microorganisms. The 'finbif' package makes the publicly available data in 'FinBIF' easily accessible to programmers. Biodiversity information is available on taxonomy and taxon occurrence. Occurrence data can be filtered by taxon, time, location and other variables. The data accessed are conveniently preformatted for subsequent analyses.",
       "License": "MIT + file LICENSE",
-      "URL": "https://github.com/luomus/finbif, https://luomus.github.io/finbif/",
+      "URL": "https://github.com/luomus/finbif, https://finbif-docs-dev.netlify.app/",
       "BugReports": "https://github.com/luomus/finbif/issues",
       "VignetteBuilder": "knitr",
       "Encoding": "UTF-8",
       "Language": "en-US",
+      "LazyData": "true",
       "Depends": [
         "R (>= 3.5.0)"
       ],
@@ -639,6 +640,7 @@
         "lutz",
         "utils"
       ],
+      "Roxygen": "list(markdown = TRUE)",
       "RoxygenNote": "7.3.2",
       "Suggests": [
         "callr",
@@ -656,14 +658,18 @@
       "X-schema.org-applicationCategory": "Biodiversity",
       "X-schema.org-keywords": "api, biodiversity, biodiversity-informatics, biodiversity-information, finbif, finbif-access, occurrences, r-package, r-programming, rstats, species, specimens, taxon, taxonomy, web-services",
       "X-schema.org-isPartOf": "https://species.fi",
-      "NeedsCompilation": "no",
-      "Author": "Finnish Museum of Natural History - Luomus [cph], William K. Morris [aut, cre] (<https://orcid.org/0000-0002-8686-4154>)",
+      "Author": "Finnish Museum of Natural History - Luomus [cph] (ROR: <https://ror.org/03tcx6c30>), Finnish Biodiversity Information Facility [cph] (ROR: <https://ror.org/01c0yey93>), William K. Morris [aut, cre] (ORCID: <https://orcid.org/0000-0002-8686-4154>)",
       "Maintainer": "William K. Morris <willi@mmorris.email>",
-      "Repository": "CRAN"
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "luomus",
+      "RemoteRepo": "finbif",
+      "RemoteRef": "dev",
+      "RemoteSha": "ce817cb8b187700d4f5fa56d7113867df2f7f66c"
     },
     "future": {
       "Package": "future",
-      "Version": "1.58.0",
+      "Version": "1.67.0",
       "Source": "Repository",
       "Title": "Unified Parallel and Distributed Processing in R for Everyone",
       "Depends": [
@@ -694,10 +700,11 @@
       "Language": "en-US",
       "Encoding": "UTF-8",
       "RoxygenNote": "7.3.2",
+      "Collate": "'000.bquote.R' '000.import.R' '000.re-exports.R' '010.tweakable.R' '010.utils-parallelly.R' 'backend_api-01-FutureBackend-class.R' 'backend_api-03.MultiprocessFutureBackend-class.R' 'backend_api-11.ClusterFutureBackend-class.R' 'backend_api-11.MulticoreFutureBackend-class.R' 'backend_api-11.SequentialFutureBackend-class.R' 'backend_api-13.MultisessionFutureBackend-class.R' 'backend_api-ConstantFuture-class.R' 'backend_api-Future-class.R' 'backend_api-FutureRegistry.R' 'backend_api-UniprocessFuture-class.R' 'backend_api-evalFuture.R' 'core_api-cancel.R' 'core_api-future.R' 'core_api-reset.R' 'core_api-resolved.R' 'core_api-value.R' 'delayed_api-futureAssign.R' 'delayed_api-futureOf.R' 'demo_api-mandelbrot.R' 'infix_api-01-futureAssign_OP.R' 'infix_api-02-globals_OP.R' 'infix_api-03-seed_OP.R' 'infix_api-04-stdout_OP.R' 'infix_api-05-conditions_OP.R' 'infix_api-06-lazy_OP.R' 'infix_api-07-label_OP.R' 'infix_api-08-plan_OP.R' 'infix_api-09-tweak_OP.R' 'protected_api-FutureCondition-class.R' 'protected_api-FutureGlobals-class.R' 'protected_api-FutureResult-class.R' 'protected_api-futures.R' 'protected_api-globals.R' 'protected_api-journal.R' 'protected_api-resolve.R' 'protected_api-signalConditions.R' 'testme.R' 'utils-basic.R' 'utils-conditions.R' 'utils-connections.R' 'utils-debug.R' 'utils-immediateCondition.R' 'utils-marshalling.R' 'utils-objectSize.R' 'utils-options.R' 'utils-prune_pkg_code.R' 'utils-registerClusterTypes.R' 'utils-rng_utils.R' 'utils-signalEarly.R' 'utils-stealth_sample.R' 'utils-sticky_globals.R' 'utils-tweakExpression.R' 'utils-uuid.R' 'utils-whichIndex.R' 'utils_api-backtrace.R' 'utils_api-capture_journals.R' 'utils_api-futureCall.R' 'utils_api-futureSessionInfo.R' 'utils_api-makeClusterFuture.R' 'utils_api-minifuture.R' 'utils_api-nbrOfWorkers.R' 'utils_api-plan.R' 'utils_api-plan-with.R' 'utils_api-sessionDetails.R' 'utils_api-tweak.R' 'zzz.R'",
       "NeedsCompilation": "no",
       "Author": "Henrik Bengtsson [aut, cre, cph] (ORCID: <https://orcid.org/0000-0002-7579-5165>)",
       "Maintainer": "Henrik Bengtsson <henrikb@braju.com>",
-      "Repository": "CRAN"
+      "Repository": "https://packagemanager.posit.co/cran/__linux__/noble/latest"
     },
     "generics": {
       "Package": "generics",
