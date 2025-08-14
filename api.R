@@ -247,7 +247,17 @@ function(input, fmt, geo, crs, timeout = 30, file = "", personToken = "", req, r
           paste0(id, "/", input_name, "_geo_", fmt, ".zip"),
           setdiff(
             list.files(id, full.names = TRUE),
-            c(input_file, orig_path, additional_files, progress_file)
+            c(
+              input_file,
+              orig_path,
+              additional_files,
+              progress_file,
+              "occurrences.txt",
+              "samples.txt",
+              "facts/occurrence_facts.txt",
+              "facts/event_facts.txt",
+              "facts/parent_event_facts.txt"
+            )
           ),
           flags = "-rj9qX"
         )
