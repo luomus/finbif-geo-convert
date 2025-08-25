@@ -252,13 +252,10 @@ function(input, fmt, geo, crs, timeout = 30, file = "", personToken = "", req, r
               orig_path,
               additional_files,
               progress_file,
-              "occurrences.txt",
-              "samples.txt",
-              "facts/occurrence_facts.txt",
-              "facts/event_facts.txt",
-              "facts/parent_event_facts.txt",
-              "media/event_media.txt",
-              "media/occurrence_media.txt"
+              paste0(id, "/occurrences.txt"),
+              paste0(id, "/samples.txt"),
+              paste0(id, "/facts"),
+              paste0(id, "/media")
             )
           ),
           flags = "-rj9qX"
