@@ -256,7 +256,9 @@ function(input, fmt, geo, crs, timeout = 30, file = "", personToken = "", req, r
               "samples.txt",
               "facts/occurrence_facts.txt",
               "facts/event_facts.txt",
-              "facts/parent_event_facts.txt"
+              "facts/parent_event_facts.txt",
+              "media/event_media.txt",
+              "media/occurrence_media.txt"
             )
           ),
           flags = "-rj9qX"
