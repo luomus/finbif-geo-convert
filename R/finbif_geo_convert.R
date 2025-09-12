@@ -76,11 +76,9 @@ get_fmt <- function(obj) {
 #' @importFrom finbif fb_occurrence_load
 get_input <- function(obj, ...) {
 
-  obj[["col_type"]] <- "all"
-
   obj[["data"]] <- finbif::finbif_occurrence_load(
     obj[["input"]],
-    select = c(obj[["col_type"]], paste0("-", deselect)),
+    select = c("all", paste0("-", deselect)),
     facts = facts,
     ...
   )
@@ -108,13 +106,11 @@ sanitise_nms <- function(obj) {
 #' @noRd
 get_spatial_input_nms <- function(obj) {
 
-  type <- obj[["col_type"]]
+  obj[["input_nms_lat"]] <- "lat_wgs84"
 
-  obj[["input_nms_lat"]] <- input_nms[[type]][["points"]][["lat"]]
+  obj[["input_nms_lon"]] <- "lon_wgs84"
 
-  obj[["input_nms_lon"]] <- input_nms[[type]][["points"]][["lon"]]
-
-  obj[["input_nms_footprint"]] <- input_nms[[type]][["footprint"]]
+  obj[["input_nms_footprint"]] <- "footprint_wgs84"
 
   obj
 
@@ -645,12 +641,4 @@ facts <- list(
     "Pesint\u00e4tulos"
   ),
   document = "Seurattava laji"
-)
-
-#' @noRd
-input_nms <- list(
-  all = list(
-    points = c(lat = "lat_wgs84", lon = "lon_wgs84"),
-    footprint = "footprint_wgs84"
-  )
 )
