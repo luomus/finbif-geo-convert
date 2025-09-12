@@ -9,6 +9,7 @@ finbif_geo_convert(
   output = "none",
   geo = c("point", "bbox", "footprint"),
   crs = "wgs84",
+  dwc = TRUE,
   ...
 )
 }
@@ -27,6 +28,8 @@ writing output to a file.}
 
 \item{crs}{Character or Integer. Coordinate reference system of output. One
 of \code{"euref"} or \code{"wgs84"}.}
+
+\item{dwc}{Logical. Use Darwin Core (or Darwin Core style) variable names.}
 
 \item{...}{Other options passed to \code{finbif::finbif_occurrence_load}.}
 }

@@ -13,6 +13,7 @@
 #'   `"footprint"`.
 #' @param crs Character or Integer. Coordinate reference system of output. One
 #'   of `"euref"` or `"wgs84"`.
+#' @param dwc Logical. Use Darwin Core (or Darwin Core style) variable names.
 #' @param ... Other options passed to `finbif::finbif_occurrence_load`.
 #'
 #' @return An `{sf}` package simple feature object (invisibly). And if
@@ -22,12 +23,12 @@
 #' @export
 finbif_geo_convert <- function(
   input, output = "none", geo = c("point", "bbox", "footprint"), crs = "wgs84",
-  ...
+  dwc = TRUE, ...
 ) {
 
   geo <- match.arg(geo)
 
-  obj <- list(input = input, output = output, geo = geo, crs = crs)
+  obj <- list(input = input, output = output, geo = geo, crs = crs, dwc = dwc)
 
   obj <- get_fmt(obj)
 
@@ -80,6 +81,7 @@ get_input <- function(obj, ...) {
     obj[["input"]],
     select = c("all", paste0("-", deselect)),
     facts = facts,
+    dwc = obj[["dwc"]],
     ...
   )
 
@@ -92,7 +94,6 @@ get_input <- function(obj, ...) {
 }
 
 #' @noRd
-#' @importFrom stringi stri_trans_general
 sanitise_nms <- function(obj) {
 
   names(obj[["data"]]) <- gsub("\\s", "_", names(obj[["data"]]))
@@ -104,13 +105,21 @@ sanitise_nms <- function(obj) {
 }
 
 #' @noRd
+#' @importFrom finbif to_dwc
 get_spatial_input_nms <- function(obj) {
 
   obj[["input_nms_lat"]] <- "lat_wgs84"
+  if (obj[["dwc"]]) obj[["input_nms_lat"]] <- finbif::to_dwc("lat_wgs84")
 
   obj[["input_nms_lon"]] <- "lon_wgs84"
+  if (obj[["dwc"]]) obj[["input_nms_lon"]] <- finbif::to_dwc("lon_wgs84")
 
   obj[["input_nms_footprint"]] <- "footprint_wgs84"
+  if (obj[["dwc"]]) {
+
+    obj[["input_nms_footprint"]] <- finbif::to_dwc("footprint_wgs84")
+
+  }
 
   obj
 
