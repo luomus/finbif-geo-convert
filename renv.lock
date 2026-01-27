@@ -1,6 +1,6 @@
 {
   "R": {
-    "Version": "4.5.1",
+    "Version": "4.5.2",
     "Repositories": [
       {
         "Name": "CRAN",
@@ -665,7 +665,7 @@
       "RemoteUsername": "luomus",
       "RemoteRepo": "finbif",
       "RemoteRef": "dev",
-      "RemoteSha": "4438b24d48ded1d79d770c7044ab4c995da338f7"
+      "RemoteSha": "ece6052896fd6b4d57282ed25b3cbd9ccae162b1"
     },
     "future": {
       "Package": "future",
